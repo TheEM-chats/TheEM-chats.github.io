@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - Регистрация</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+    <!-- Main version -->
+    <script src="https://unpkg.com/cookielib/src/cookie.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.dom.min.js"></script>
+</head>
+
+<body>
+    <script>
+        function setup() {
+            function setCookie2(name, value, options) {
+                setCookie(name, value, {
+                    expires: new Date('2035-12-31T23:59:59Z'),
+                    path: '/',
+                    secure: true,
+                    samesite: 'strict',
+                    ...options // если есть свои параметры — они переопределят дефолтные
+                });
+            }
+
+            function getRandomFromRange(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            if (getCookie("IsReg") == "1") {
+                window.location.href = "homepage.html";
+            }
+
+            noCanvas(); // отключаем холст, если он не нужен
+            text = createP("Добро пожаловать в TheEasyMessanger")
+            text.position(0, -10)
+            reg = createButton("Регистрация");
+            reg.position(0, 50);
+            reg.size(window.innerWidth, 150)
+            reg.style('background-color', '#ff5733'); // фон кнопки
+            reg.style('border-radius', '12px');
+            reg.mousePressed(() => {
+                let name = prompt("Как тебя зовут?");
+                let login = prompt("Придумай логин, например:" + name + getRandomFromRange(1111, 9999));
+                let pass1 = prompt("Придумай и запомни пароль");
+                let pass2 = prompt("Повтори пароль")
+                let mail = prompt("Введи коррекную почту куда будут присылаться уведомления например: AptemMail@mail.ru, я серьёзно туда будут приходить уведомления!!")
+                if (name === "" || login === "" || pass1 === "" || mail === "") {
+                    alert("Не все данные введены");
+                } else {
+                    if (pass1 == pass2) {
+                        let pp = String(getRandomFromRange(11111, 99999))
+                        let ss = String(getRandomFromRange(11111, 99999))
+                        let ps = String(pp) + String(ss)
+                        let globalcan = 0
+                        fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_mail&text=" + mail)
+                            .then(response => response.text())
+                            .then(data => {
+                                globalres = data; // вызываем только после получения данных
+                                console.log(globalres);
+                                fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_profn&text=" + name)
+                                    .then(response => response.text())
+                                    .then(data => {
+                                        globalres = data; // вызываем только после получения данных
+                                        console.log(globalres);
+                                        fetch("https://sebain.pythonanywhere.com/set?filename=" + login + pass1 + pass2 + "_pp&text=" + pp)
+                                            .then(response => response.text())
+                                            .then(data => {
+                                                globalres = data; // вызываем только после получения данных
+                                                console.log(globalres);
+                                                fetch("https://sebain.pythonanywhere.com/set?filename=" + login + pass1 + pass2 + "_ss&text=" + ss)
+                                                    .then(response => response.text())
+                                                    .then(data => {
+                                                        globalres = data; // вызываем только после получения данных
+                                                        console.log(globalres);
+                                                        fetch("https://sebain.pythonanywhere.com/set?filename=" + login + pass1 + pass2 + "_reg&text=yes")
+                                                            .then(response => response.text())
+                                                            .then(data => {
+                                                                globalres = data; // вызываем только после получения данных
+                                                                console.log(globalres); // выводим уже присвоенное значение
+                                                                setCookie2('pp', pp);
+                                                                setCookie2('ss', ss);
+                                                                setCookie2('ps', ps);
+                                                                setCookie2('IsReg', "1");
+                                                                alert("Успешно зарегестрировано")
+                                                                window.location.href = "index.html"; // выводим уже присвоенное значение
+                                                                globalcan = 1
+                                                            })
+                                                            .catch(error => {
+                                                                alert("Ошибка")
+                                                                window.location.href = "index.html";
+                                                            });
+
+                                                    })
+                                                    .catch(error => {
+                                                        alert("Ошибка")
+                                                        window.location.href = "index.html";
+                                                    }); // выводим уже присвоенное значение
+                                            })
+                                            .catch(error => {
+                                                alert("Ошибка")
+                                                window.location.href = "index.html";
+                                            }); // выводим уже присвоенное значение
+                                    })
+                                    .catch(error => {
+                                        alert("Ошибка")
+                                        window.location.href = "index.html";
+                                    }); // выводим уже присвоенное значение
+                            })
+                            .catch(error => {
+                                alert("Ошибка")
+                                window.location.href = "index.html";
+
+                            });
+
+
+
+
+                    } else {
+                        alert("Разные пароли")
+                    }
+                }
+
+            });
+            log = createButton("Войти");
+            log.position(0, 200);
+            log.size(window.innerWidth, 150)
+            log.style('background-color', '#0000ff'); // фон кнопки
+            log.style('border-radius', '12px');
+            window.addEventListener("resize", () => {
+                log.size(window.innerWidth, 150)
+                reg.size(window.innerWidth, 150)
+            });
+            log.mousePressed(() => {
+                let login = prompt("Логин");
+                let pass = prompt("Пароль");
+                fetch("https://sebain.pythonanywhere.com/get?filename=" + login + pass + pass + "_reg")
+                    .then(response => response.text())
+                    .then(data => {
+                        let globalresx = data; // вызываем только после получения данных
+                        if (globalresx == "yes") {
+                            fetch("https://sebain.pythonanywhere.com/get?filename=" + login + pass + pass + "_pp")
+                                .then(response => response.text())
+                                .then(data => {
+                                    globalres2 = data; // вызываем только после получения данных
+                                    setCookie2("pp", globalres2)
+                                    fetch("https://sebain.pythonanywhere.com/get?filename=" + login + pass + pass + "_ss")
+                                        .then(response => response.text())
+                                        .then(data => {
+                                            globalres3 = data; // вызываем только после получения данных
+                                            setCookie2("ss", globalres3)
+                                            let ps = String(getCookie("pp")) + String(getCookie("ss"))
+                                            setCookie2("ps", ps)
+                                            setCookie2("IsReg", "1")
+                                            alert("Вход успешен")
+                                            window.location.href = "index.html";
+                                        })
+                                        .catch(error => {
+                                            alert("Ошибка3")
+                                            window.location.href = "index.html";
+
+                                        });
+                                })
+                                .catch(error => {
+
+                                    alert("Ошибка2")
+                                    window.location.href = "index.html";
+                                });
+
+
+                        } else {
+                            alert("Ошибка1")
+                            window.location.href = "index.html";
+                        }
+                    })
+                    .catch(error => {
+                        alert("Ошибка")
+                        alert(error)
+                        window.location.href = "index.html";
+                    });
+            });
+
+        }
+    </script>
+</body>
+
+</html>

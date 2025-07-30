@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - чат</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.dom.min.js"></script>
+    <script src="https://unpkg.com/cookielib/src/cookie.js"></script>
+</head>
+
+<body>
+    <script>
+        let ss = getCookie("ss")
+        let pp = getCookie("pp");
+        let ps = getCookie("ps")
+        let globalres = ""
+        let history = []
+        let objs = []
+        let subut
+        let container
+
+        function setup() {
+            if (getCookie("IsReg") != "1" || getCookie("name") == getCookie("ываываывауцкцуквпыпewwerwr") || getCookie("name") == "undefined") {
+                window.location.href = "homepage.html";
+            }
+
+            function getCharWidth(char, fontSize = '12px', fontFamily = 'Arial') {
+                let span = document.createElement('span');
+                span.textContent = char;
+                span.style.fontSize = fontSize;
+                span.style.fontFamily = fontFamily;
+                span.style.visibility = 'hidden';
+                document.body.appendChild(span);
+                let width = span.offsetWidth;
+                span.remove();
+                return width;
+            }
+
+            function getFirstNChars(str, n) {
+                return str.substring(0, n);
+            }
+
+            function setCookie2(name, value, options) {
+                setCookie(name, value, {
+                    expires: new Date('2035-12-31T23:59:59Z'),
+                    path: '/',
+                    secure: true,
+                    samesite: 'strict',
+                    ...options // если есть свои параметры — они переопределят дефолтные
+                });
+            }
+
+            function render() {
+                let superbutton = createButton("А что вы тут забыли????")
+                superbutton.position(0, 1000000)
+                container.child(superbutton)
+                let autor
+                let num = objs.length - 1
+                while (num > -1) {
+                    objs[num].remove()
+                    num--
+                }
+                num = history.length - 1
+                while (num > -1) {
+                    if (history[num].type == "text") {
+                        let colour
+                        if (history[num].sender == pp) {
+                            autor = "Вы:\n"
+                            colour = "#66ff66"
+                        } else if (history[num].sender == "system") {
+                            autor = "Система:\n"
+                            colour = "#669999"
+                        } else {
+                            autor = getCookie("name") + ":\n"
+                            colour = "#6699ff"
+                        }
+                        let unixTime = history[num].time // Пример Unix-времени
+                        let date = new Date(unixTime * 1000); // Преобразуем в миллисекунды
+
+                        // Форматируем вручную
+                        let options = {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            timeZone: 'Europe/Minsk',
+                        };
+
+                        let time = date.toLocaleString('ru-RU', options);
+                        console.log(time); // "11:00 30 июля 2025 г."
+
+                        objs[num] = createButton(time + "\n" + autor + history[num].value)
+                        objs[num].style('white-space', 'pre-wrap');
+                        objs[num].style('text-align', 'left');
+                        objs[num].style('background-color', colour); // фон кнопки
+                        objs[num].style('border-radius', '12px');
+                        container.child(objs[num]);
+                    }
+
+                    num--
+                }
+                superbutton.remove()
+            }
+
+            function update() {
+                console.log("Обновление")
+                fetch("https://sebain.pythonanywhere.com/get?filename=chat_" + getCookie("chatid"))
+                    .then(response => response.text())
+                    .then(data => {
+                        history = JSON.parse(data)
+                        render()
+
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                    });
+            }
+
+            function push() {
+                let pushing = JSON.stringify(history);
+                fetch("https://sebain.pythonanywhere.com/set?filename=chat_" + getCookie("chatid") + "&text=" + pushing)
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log("Загрузка" + data)
+                        render()
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                    });
+            }
+            window.addEventListener("resize", () => {
+                send.position(window.innerWidth - 90, window.innerHeight - 30)
+                input.position(0, window.innerHeight - 30)
+                input.size(window.innerWidth - 100, 20)
+                container.size(window.innerWidth - 75, window.innerHeight - 100)
+                container.position(0, 25)
+            });
+            noCanvas(); // отключаем холст, если он не нужен
+            update()
+            setInterval(() => {
+                console.log("Каждые 5 секунд: пип!");
+                update()
+            }, 5000)
+            console.log(getCharWidth('Aкваматика 2'));
+            console.log(getFirstNChars('Aкваматика 2', 4)) // 10 считать как за отступ
+            container = createDiv();
+            container.id("chat-container"); // дадим ID для удобства
+            container.style('display', 'flex');
+            container.style('flex-direction', 'column');
+            container.style('gap', '10px');
+            container.style('padding', '20px');
+            container.style('overflow', 'auto');
+            container.size(window.innerWidth - 75, window.innerHeight - 100)
+            container.position(0, 25)
+            let exit = createButton("Выход")
+            exit.mousePressed(() => {
+                window.location.href = "homepage.html"
+
+            });
+            exit.position(0, 0)
+            let name = createP(getCookie("name"))
+            name.position(85, -15)
+            let ban = createButton("Удалить!")
+            ban.mousePressed(() => {
+                let confirm = prompt(
+                    "Если вы и вправду хотите удалить чат с: " + getCookie("name") +
+                    ", то просто введи это число: " + getCookie("chatid") + " и нажми ок"
+                );
+
+                if (confirm === getCookie("chatid")) {
+                    fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_chats")
+                        .then(response => response.text())
+                        .then(data => {
+                            let list = JSON.parse(data);
+
+                            // отфильтруем весь массив сразу, убрав чат с нужным chatid
+                            const newList = list.filter(obj => obj.chatid !== getCookie("chatid"));
+
+                            const exportJson = JSON.stringify(newList);
+
+                            return fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_chats" + "&text=" + exportJson);
+                        })
+                        .then(response => response.text())
+                        .then(() => {
+                            alert("Удалено!");
+                            history.push({
+                                type: 'text',
+                                value: "Собеседник удалил переписку, слать сюда чтото бесполезно!",
+                                sender: "system",
+                                time: Math.floor(Date.now() / 1000)
+                            });
+                            push()
+                            setInterval(() => {
+                                window.location.href = "homepage.html"
+                            }, 5000)
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при удалении:", error);
+                        });
+                }
+            })
+            ban.position(window.innerWidth - 80, 0)
+            let input = createInput()
+            input.attribute('placeholder', 'Введите текст...');
+            input.style('font-size', '12px');
+            input.position(0, window.innerHeight - 30)
+            input.size(window.innerWidth - 100, 20)
+            let send = createButton("Слать")
+            send.position(window.innerWidth - 90, window.innerHeight - 30)
+            send.size(75, 25)
+
+            function sent(message) {
+                input.value("")
+                history.push({
+                    type: 'text',
+                    value: message,
+                    sender: pp,
+                    time: Math.floor(Date.now() / 1000)
+                });
+                push()
+            }
+            input.elt.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    console.log('Enter нажат: ' + input.value());
+                    sent(input.value())
+
+                }
+            });
+            send.mousePressed(() => {
+                sent(input.value())
+            });
+
+        }
+    </script>
+</body>
+
+</html>

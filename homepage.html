@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - Список чатов</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.dom.min.js"></script>
+    <script src="https://unpkg.com/cookielib/src/cookie.js"></script>
+</head>
+
+<body>
+    <script>
+        let myButton;
+        let ss = getCookie("ss")
+        let pp = getCookie("pp");
+        let ps = getCookie("ps")
+        let globalres = ""
+        let chatbuttons = []
+
+        function setup() {
+            setCookie2("chatid", "undefined")
+            setCookie2("name", "undefined")
+            if (getCookie("IsReg") != "1") {
+                window.location.href = "index.html";
+            }
+
+            function setCookie2(name, value, options) {
+                setCookie(name, value, {
+                    expires: new Date('2035-12-31T23:59:59Z'),
+                    path: '/',
+                    secure: true,
+                    samesite: 'strict',
+                    ...options // если есть свои параметры — они переопределят дефолтные
+                });
+            }
+
+
+            function addchat(newchats) {
+                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_chats")
+                    .then(response => response.text())
+                    .then(data => {
+                        globalres = data
+                        console.log(globalres)
+                        let chats = JSON.parse(globalres)
+                        let num = newchats.length - 1
+                        while (num > -1) {
+                            chats.push({
+                                target: newchats[num].target,
+                                chatid: newchats[num].chatid
+                            });
+                            num--
+                        }
+                        let exportJson = JSON.stringify(chats)
+                        console.log(exportJson)
+                        fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_chats" + "&text=" + exportJson)
+                            .then(response => response.text())
+                            .then(data => {
+                                globalres = data; // вызываем только после получения данных
+                                console.log(globalres); // выводим уже присвоенное значение
+                                window.location.href = "homepage.html";
+                            })
+                            .catch(error => {
+                                console.error("Ошибка при получении данных:", error);
+                            });
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                        let chats = []
+                        let num = newchats.length - 1
+                        while (num > -1) {
+                            chats.push({
+                                target: newchats[num].target,
+                                chatid: newchats[num].chatid
+                            });
+                            num--
+                        }
+                        let exportJson = JSON.stringify(chats)
+                        fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_chats" + "&text=" + exportJson)
+                            .then(response => response.text())
+                            .then(data => {
+                                globalres = data; // вызываем только после получения данных
+                                console.log(globalres); // выводим уже присвоенное значение
+                                window.location.href = "homepage.html";
+                            })
+                            .catch(error => {
+                                console.error("Ошибка при получении данных:", error);
+                            });
+                    });
+            }
+            // Загружаем новые чаты
+            fetch("https://sebain.pythonanywhere.com/get?filename=newchats_" + pp)
+                .then(response => response.text())
+                .then(data => {
+                    globalres = data; // вызываем только после получения данных
+                    console.log(globalres); // выводим уже присвоенное значение
+                    try {
+                        let newchats = JSON.parse(globalres)
+                        addchat(newchats)
+                        fetch("https://sebain.pythonanywhere.com/set?filename=newchats_" + pp + "&text=voidblank1")
+                            .then(response => response.text())
+                            .then(data => {
+                                globalres = data; // вызываем только после получения данных
+                                console.log(globalres); // выводим уже присвоенное значение
+                            })
+                            .catch(error => {
+                                console.error("Ошибка при получении данных:", error);
+                            });
+                    } catch {
+                        console.log("Если это не джсон то там ничё нет")
+                    }
+                })
+                .catch(error => {
+                    console.error("Собственно если файла с чатами нет то зачем нам чтото делать ", error);
+                });
+            //Инитиализация
+            function getRandomFromRange(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            window.addEventListener("resize", () => {
+                idtext.position(0, window.innerHeight - 35)
+                addbutton.position(window.innerWidth - 150, window.innerHeight - 75)
+                changebutton.position(window.innerWidth - 100, 25)
+                let num = chatbuttons.length - 1
+                while (num > -1) {
+                    let tbutton = chatbuttons[num]
+                    tbutton.size(window.innerWidth, 35)
+                    num--
+
+                }
+            });
+            noCanvas()
+                //Загрузка чатов
+            fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_chats")
+                .then(response => response.text())
+                .then(data => {
+                    chatsJSON = data;
+                    console.log(chatsJSON) // выводим уже присвоенное значение
+                    let tchats = JSON.parse(chatsJSON)
+                    let num = tchats.length - 1
+                    let btnum = 0
+                    let pos = 75
+                    while (num > -1) {
+                        let xpos = pos
+                        let xbtnum = btnum
+                        let xnum = num
+
+                        fetch("https://sebain.pythonanywhere.com/saveget?filename=" + tchats[xnum].target + "_profn")
+                            .then(response => response.text())
+                            .then(data => {
+                                let xid = tchats[xnum].chatid
+                                let tbutton = createButton(data)
+                                tbutton.position(0, xpos)
+                                tbutton.size(window.innerWidth, 35)
+                                tbutton.style('border-radius', '8px');
+                                tbutton.style('text-align', 'left');
+                                tbutton.style('padding-left', '12px');
+                                chatbuttons[xbtnum] = tbutton
+                                tbutton.mousePressed(() => {
+                                    setCookie2("chatid", xid)
+                                    setCookie2("name", data)
+                                    window.location.href = "chat.html";
+                                });
+                            })
+                            .catch(error => {
+                                console.error("Ошибка при получении данных:", error);
+                            });
+                        pos = pos + 35
+                        btnum++
+                        num--
+                    }
+                })
+                .catch(error => {
+                    console.error("Ошибка при получении данных:", error);
+                    alert("У вас нет ни одного чата??? Так добавь своего друга по его ID, если уже добавил или хочешь добавить жми ОК")
+                });
+            //Ник
+            fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_profn")
+                .then(response => response.text())
+                .then(data => {
+                    createP(data)
+                })
+                .catch(error => {
+                    console.error("Ошибка при получении данных:", error);
+                    alert("Ошибка получения ника! Видно нет интернета!!!")
+                });
+            let changebutton = createButton("Смена⚙");
+            changebutton.position(window.innerWidth - 100, 25)
+            changebutton.style('border-radius', '12px');
+            changebutton.mousePressed(() => {
+                let newnik = prompt("Введите новое имя/ник/заголовок")
+                if (newnik == "") {
+                    alert("Ник не может быть пустым!!")
+                } else {
+                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_profn&text=" + newnik)
+                        .then(response => response.text())
+                        .then(data => {
+                            globalres = data; // вызываем только после получения данных
+                            console.log(globalres);
+                            window.location.href = "homepage.html"; // выводим уже присвоенное значение
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при получении данных:", error);
+                        });
+                }
+            });
+            // Остальное 
+            let idtext = createP("Ваш id:" + pp)
+            idtext.position(0, window.innerHeight - 35)
+            let addbutton = createButton("Добавить по ID")
+            addbutton.style('background-color', '#339933'); // фон кнопки
+            addbutton.style('border-radius', '12px');
+            addbutton.position(window.innerWidth - 150, window.innerHeight - 75)
+            addbutton.mousePressed(() => {
+                let globalres = ""
+                let addid = prompt("Введите id вашего собеседника")
+                if (addid != pp) {
+                    fetch("https://sebain.pythonanywhere.com/saveget?filename=" + addid + "_profn")
+                        .then(response => response.text())
+                        .then(data => { // вызываем только после получения данных
+
+                            console.log(data);
+                            if (data == "Файл не найден в save") {
+                                alert("НЕВЕРНЫЙ ID")
+                                window.href.location = "homepage.html"
+                            }
+                            let chatid = String(getRandomFromRange(11111, 99999))
+
+                            function sent(chats, addid, chatid, pp) {
+                                chats.push({
+                                    target: pp,
+                                    chatid: chatid
+                                });
+
+                                let targetJSON = JSON.stringify(chats)
+                                let our = [{
+                                    target: addid,
+                                    chatid: chatid
+                                }];
+                                let ourJSON = JSON.stringify(our)
+                                let placeholder = [{
+                                    type: 'text',
+                                    value: "Привет",
+                                    sender: pp,
+                                    time: 0
+                                }];
+                                let placeholderJSON = JSON.stringify(placeholder)
+                                fetch("https://sebain.pythonanywhere.com/set?filename=chat_" + chatid + "&text=" + placeholderJSON)
+                                    .then(response => response.text())
+                                    .then(data => {
+                                        data = data
+                                        fetch("https://sebain.pythonanywhere.com/set?filename=newchats_" + addid + "&text=" + targetJSON)
+                                            .then(response => response.text())
+                                            .then(data => {
+                                                globalres = data;
+                                                fetch("https://sebain.pythonanywhere.com/set?filename=newchats_" + pp + "&text=" + ourJSON)
+                                                    .then(response => response.text())
+                                                    .then(data => {
+                                                        globalres = data; // выводим уже присвоенное значение
+                                                        alert("Чат добавлен, успех!")
+                                                        window.location.href = "homepage.html"
+                                                    })
+                                                    .catch(error => {
+                                                        alert("АЛЁЁЁЁ, ВСЁ СЛАМАЛАСЯ")
+                                                    }); // выводим уже присвоенное значение
+                                            })
+                                            .catch(error => {
+                                                alert("АЛЁЁЁЁ, ВСЁ СЛАМАЛАСЯ")
+                                            });
+                                    })
+                                    .catch(error => {
+                                        alert("АЛЁЁЁЁ, ВСЁ СЛАМАЛАСЯ")
+                                    });
+                            }
+                            fetch("https://sebain.pythonanywhere.com/get?filename=newchats_" + addid)
+                                .then(response => response.text())
+                                .then(data => {
+                                    globalres = data;
+                                    try {
+                                        let chats = JSON.parse(globalres)
+                                        sent(chats, addid, chatid, pp)
+                                    } catch {
+                                        console.log(error);
+                                        let chats = []
+                                        sent(chats, addid, chatid, pp)
+
+                                    } // выводим уже присвоенное значение
+                                })
+                                .catch(error => {
+                                    console.log(error)
+                                    let chats = []
+                                    sent(chats, addid, chatid, pp)
+                                }); // выводим уже присвоенное значение
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при получении данных:", error);
+                            alert("Не верный ID")
+                            window.location.href = "homepage.html";
+                        });
+                } else {
+                    alert("Не верный Id")
+                }
+
+
+
+
+
+            });
+        }
+    </script>
+</body>
+
+</html>
