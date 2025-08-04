@@ -7,9 +7,9 @@
     <title>TheEM - чат</title>
     <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.dom.min.js"></script>
-    <script src="https://unpkg.com/cookielib/src/cookie.js"></script>
+    <script src="p5.js"></script>
+    <script src="cookie.js"></script>
+
 </head>
 
 <body>
@@ -26,6 +26,23 @@
         function setup() {
             if (getCookie("IsReg") != "1" || getCookie("name") == getCookie("ываываывауцкцуквпыпewwerwr") || getCookie("name") == "undefined") {
                 window.location.href = "homepage.html";
+            }
+
+            function Crypt(text) {
+                return encodeURIComponent(text);
+            }
+
+            function Decrypt(text) {
+                try {
+                    return decodeURIComponent(text);
+                } catch (e) {
+                    return text;
+                }
+            }
+
+            function SoundEffect(filename) {
+                const audio = new Audio(filename);
+                audio.play();
             }
 
             function getCharWidth(char, fontSize = '12px', fontFamily = 'Arial') {
@@ -55,6 +72,17 @@
             }
 
             function render() {
+                //setCookie2(getCookie("chatid") + "_history", JSON.stringify(history))
+                fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_oldchat" + getCookie("chatid") + "&text=" + Crypt(JSON.stringify(history)))
+                    .then(response => response.text())
+                    .then(data => {
+                        globalres = data;
+                        setCookie2('cok', globalres); // вызываем только после получения данных
+                        console.log(globalres); // выводим уже присвоенное значение
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                    });
                 let superbutton = createButton("А что вы тут забыли????")
                 superbutton.position(0, 1000000)
                 container.child(superbutton)
@@ -99,6 +127,7 @@
                         objs[num].style('text-align', 'left');
                         objs[num].style('background-color', colour); // фон кнопки
                         objs[num].style('border-radius', '12px');
+
                         container.child(objs[num]);
                     }
 
@@ -112,8 +141,15 @@
                 fetch("https://sebain.pythonanywhere.com/get?filename=chat_" + getCookie("chatid"))
                     .then(response => response.text())
                     .then(data => {
-                        history = JSON.parse(data)
-                        render()
+                        data = Decrypt(data)
+                        if (data == JSON.stringify(history)) {
+                            console.log("Новых сообщений нет")
+                        } else {
+                            SoundEffect("msg.mp3")
+                            history = JSON.parse(data)
+                            render()
+                        }
+
 
                     })
                     .catch(error => {
@@ -122,8 +158,9 @@
             }
 
             function push() {
+                SoundEffect("push.mp3")
                 let pushing = JSON.stringify(history);
-                fetch("https://sebain.pythonanywhere.com/set?filename=chat_" + getCookie("chatid") + "&text=" + pushing)
+                fetch("https://sebain.pythonanywhere.com/set?filename=chat_" + getCookie("chatid") + "&text=" + Crypt(pushing))
                     .then(response => response.text())
                     .then(data => {
                         console.log("Загрузка" + data)
@@ -164,7 +201,9 @@
             });
             exit.position(0, 0)
             let name = createP(getCookie("name"))
+            name.style('background-color', getCookie("colour"));
             name.position(85, -15)
+            name
             let ban = createButton("Удалить!")
             ban.mousePressed(() => {
                 let confirm = prompt(
@@ -234,6 +273,32 @@
             send.mousePressed(() => {
                 sent(input.value())
             });
+
+
+
+            //            overlay = createDiv('');
+            //            overlay.position(0, 0);
+            //            overlay.size(windowWidth, windowHeight);
+            //            overlay.style('background', 'rgba(0, 0, 0, 0.6)');
+            //            overlay.style('position', 'fixed');
+            //            overlay.style('z-index', '100');
+            //            overlay.style('pointer-events', 'none');
+            //
+            //            // Кнопки — отдельно, с более высоким z-index
+            //            btnEdit = createButton('Изменить');
+            //            btnEdit.position(100, 100);
+            //            btnEdit.style('position', 'fixed');
+            //            btnEdit.style('z-index', '101');
+            //
+            //            btnDelete = createButton('Удалить');
+            //            btnDelete.position(100, 150);
+            //            btnDelete.style('position', 'fixed');
+            //            btnDelete.style('z-index', '101');
+            //
+            //            btnCancel = createButton('Отмена');
+            //            btnCancel.position(100, 200);
+            //            btnCancel.style('position', 'fixed');
+            //            btnCancel.style('z-index', '101');
 
         }
     </script>

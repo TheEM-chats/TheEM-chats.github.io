@@ -7,9 +7,8 @@
     <title>TheEM - Регистрация</title>
     <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
     <!-- Main version -->
-    <script src="https://unpkg.com/cookielib/src/cookie.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.dom.min.js"></script>
+    <script src="p5.js"></script>
+    <script src="cookie.js"></script>
 </head>
 
 <body>
@@ -41,11 +40,11 @@
             reg.style('background-color', '#ff5733'); // фон кнопки
             reg.style('border-radius', '12px');
             reg.mousePressed(() => {
-                let name = prompt("Как тебя зовут?");
-                let login = prompt("Придумай логин, например:" + name + getRandomFromRange(1111, 9999));
-                let pass1 = prompt("Придумай и запомни пароль");
-                let pass2 = prompt("Повтори пароль")
-                let mail = prompt("Введи коррекную почту куда будут присылаться уведомления например: AptemMail@mail.ru, я серьёзно туда будут приходить уведомления!!")
+                let name = prompt("Как тебя зовут? (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)");
+                let login = prompt("Придумай логин, например:" + name + getRandomFromRange(1111, 9999) + " (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)");
+                let pass1 = prompt("Придумай и запомни пароль (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)");
+                let pass2 = prompt("Повтори пароль (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)")
+                let mail = prompt("Введи вашу РЕАЛЬНУЮ почту куда будут присылаться уведомления например: AptemMail@mail.ru, я серьёзно туда будут приходить уведомления!! (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)")
                 if (name === "" || login === "" || pass1 === "" || mail === "") {
                     alert("Не все данные введены");
                 } else {
@@ -133,8 +132,8 @@
                 reg.size(window.innerWidth, 150)
             });
             log.mousePressed(() => {
-                let login = prompt("Логин");
-                let pass = prompt("Пароль");
+                let login = prompt("Логин (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)");
+                let pass = prompt("Пароль (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)");
                 fetch("https://sebain.pythonanywhere.com/get?filename=" + login + pass + pass + "_reg")
                     .then(response => response.text())
                     .then(data => {

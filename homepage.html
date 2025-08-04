@@ -7,9 +7,8 @@
     <title>TheEM - Список чатов</title>
     <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.dom.min.js"></script>
-    <script src="https://unpkg.com/cookielib/src/cookie.js"></script>
+    <script src="p5.js"></script>
+    <script src="cookie.js"></script>
 </head>
 
 <body>
@@ -26,6 +25,18 @@
             setCookie2("name", "undefined")
             if (getCookie("IsReg") != "1") {
                 window.location.href = "index.html";
+            }
+
+            function Crypt(text) {
+                return encodeURIComponent(text);
+            }
+
+            function Decrypt(text) {
+                try {
+                    return decodeURIComponent(text);
+                } catch (e) {
+                    return text;
+                }
             }
 
             function setCookie2(name, value, options) {
@@ -117,6 +128,28 @@
                     console.error("Собственно если файла с чатами нет то зачем нам чтото делать ", error);
                 });
             //Инитиализация
+            function getRandomBrightColor() {
+                const brightColors = [
+                    'FF5733', 'FF8C00', 'FFD700', 'ADFF2F', '00FF7F', '00FFFF', '1E90FF', '4169E1',
+                    '9932CC', 'FF69B4', 'FF1493', 'FF4500', '32CD32', '00CED1', 'DC143C', '8A2BE2',
+                    'FF6347', 'FFA07A', 'FF7F50', 'FFB6C1', 'FA8072', 'F08080', 'F0E68C', 'EEE8AA',
+                    'DAA520', 'B8860B', 'D2691E', 'CD5C5C', '8B0000', 'A52A2A', 'B22222', 'BC8F8F',
+                    'FF00FF', '8B008B', '9400D3', 'BA55D3', '9370DB', '7B68EE', '6A5ACD', '483D8B',
+                    '6495ED', '40E0D0', '48D1CC', '00BFFF', '87CEFA', '87CEEB', '4682B4', '5F9EA0',
+                    '00FA9A', '00FF00', '7FFF00', '7CFC00', '32CD32', '98FB98', '90EE90', '8FBC8F',
+                    '3CB371', '2E8B57', '228B22', '006400', '66CDAA', '20B2AA', '008B8B', '008080',
+                    'B0E0E6', 'AFEEEE', 'ADD8E6', 'B0C4DE', '778899', '708090', 'BEBEBE', 'D3D3D3',
+                    'C0C0C0', 'A9A9A9', '808080', '696969', '2F4F4F', '000000', 'FFFFFF', 'F5F5F5',
+                    'FFE4B5', 'FFEBCD', 'FFF0F5', 'FFFACD', 'FAFAD2', 'FFEFD5', 'FFDAB9', 'E6E6FA',
+                    'D8BFD8', 'DDA0DD', 'EE82EE', 'DA70D6', 'FF00FF', 'C71585', 'DB7093', 'FF1493',
+                    'FF69B4', 'FFC0CB', 'FFA07A', 'FF7F50', 'FF6347', 'FF4500', 'FF8C00', 'FFA500',
+                    'FFD700', 'FFFF00', 'FFFFE0', 'F0E68C', 'EEDD82', 'DAA520', 'BDB76B', 'B8860B'
+                ];
+                const randomIndex = Math.floor(Math.random() * brightColors.length);
+                return brightColors[randomIndex];
+            }
+
+
             function getRandomFromRange(min, max) {
                 return Math.floor(Math.random() * (max - min + 1)) + min;
             }
@@ -124,6 +157,7 @@
                 idtext.position(0, window.innerHeight - 35)
                 addbutton.position(window.innerWidth - 150, window.innerHeight - 75)
                 changebutton.position(window.innerWidth - 100, 25)
+                colour.position(window.innerWidth - 200, 25)
                 let num = chatbuttons.length - 1
                 while (num > -1) {
                     let tbutton = chatbuttons[num]
@@ -151,8 +185,12 @@
                         fetch("https://sebain.pythonanywhere.com/saveget?filename=" + tchats[xnum].target + "_profn")
                             .then(response => response.text())
                             .then(data => {
+                                let clr
                                 let xid = tchats[xnum].chatid
                                 let tbutton = createButton(data)
+                                let xdata = data
+                                tbutton.style('white-space', 'pre-wrap');
+                                //tbutton.html("Текст")
                                 tbutton.position(0, xpos)
                                 tbutton.size(window.innerWidth, 35)
                                 tbutton.style('border-radius', '8px');
@@ -162,8 +200,49 @@
                                 tbutton.mousePressed(() => {
                                     setCookie2("chatid", xid)
                                     setCookie2("name", data)
+                                    setCookie2("colour", clr)
                                     window.location.href = "chat.html";
                                 });
+                                fetch("https://sebain.pythonanywhere.com/get?filename=chat_" + xid)
+                                    .then(response => response.text())
+                                    .then(data => {
+                                        let history_newJSON = data
+                                        fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_oldchat" + xid)
+                                            .then(response => response.text())
+                                            .then(data => {
+                                                data = Decrypt(data)
+                                                let history_oldJSON = data
+                                                if (history_newJSON == history_oldJSON) {
+                                                    let history = JSON.parse(history_newJSON)
+                                                    let l = history.length - 1
+                                                    tbutton.html(xdata + " [ПОСЛЕДНЕЕ]\n" + history[l].value)
+
+                                                } else {
+                                                    tbutton.html(xdata + " [НОВОЕ]")
+                                                }
+                                            })
+                                            .catch(error => {
+                                                console.error("Ошибка при получении данных:", error);
+                                            });
+
+                                    })
+                                    .catch(error => {
+                                        console.error("Ошибка при получении данных:", error);
+                                    });
+                                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + tchats[xnum].target + "_colour")
+                                    .then(response => response.text())
+                                    .then(data => {
+                                        console.log(data)
+                                        if (data == "Файл не найден в save") {
+                                            console.log("Не получен цвет" + tchats[xnum].target)
+                                        } else {
+                                            tbutton.style('background-color', "#" + data);
+                                            clr = "#" + data
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error(error)
+                                    });
                             })
                             .catch(error => {
                                 console.error("Ошибка при получении данных:", error);
@@ -187,11 +266,50 @@
                     console.error("Ошибка при получении данных:", error);
                     alert("Ошибка получения ника! Видно нет интернета!!!")
                 });
-            let changebutton = createButton("Смена⚙");
+            console.log(getRandomBrightColor())
+            let colour = createButton("Цвет ника⚙");
+            colour.position(window.innerWidth - 200, 25)
+            colour.style('border-radius', '12px');
+            fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_colour")
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data)
+                    if (data == "Файл не найден в save") {
+                        crush
+                    }
+                    colour.style('background-color', "#" + data);
+                })
+                .catch(error => {
+                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_colour&text=" + getRandomBrightColor())
+                        .then(response => response.text())
+                        .then(data => {
+                            globalres = data; // вызываем только после получения данных
+                            console.log(globalres);
+                            window.location.href = "homepage.html"; // выводим уже присвоенное значение
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при получении данных:", error);
+                            alert("Проверьте интернет!!! Он возможно ламатый у вас!")
+                        });
+                });
+            colour.mousePressed(() => {
+                fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_colour&text=" + getRandomBrightColor())
+                    .then(response => response.text())
+                    .then(data => {
+                        globalres = data; // вызываем только после получения данных
+                        console.log(globalres);
+                        window.location.href = "homepage.html"; // выводим уже присвоенное значение
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                        alert("Проверьте интернет!!! Он возможно ламатый у вас!")
+                    });
+            });
+            let changebutton = createButton("Ник⚙");
             changebutton.position(window.innerWidth - 100, 25)
             changebutton.style('border-radius', '12px');
             changebutton.mousePressed(() => {
-                let newnik = prompt("Введите новое имя/ник/заголовок")
+                let newnik = prompt("Введите новое имя/ник/заголовок (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)")
                 if (newnik == "") {
                     alert("Ник не может быть пустым!!")
                 } else {
@@ -217,7 +335,7 @@
             addbutton.mousePressed(() => {
                 let globalres = ""
                 let addid = prompt("Введите id вашего собеседника")
-                if (addid != pp) {
+                if (addid != pp || addid != "" || addid != "1") {
                     fetch("https://sebain.pythonanywhere.com/saveget?filename=" + addid + "_profn")
                         .then(response => response.text())
                         .then(data => { // вызываем только после получения данных
