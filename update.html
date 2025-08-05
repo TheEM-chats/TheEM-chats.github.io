@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - список обновлений</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="p5.js"></script>
+    <script src="cookie.js"></script>
+</head>
+
+<body>
+    <script>
+        let myButton;
+
+        function setup() {
+            if (getCookie("captcha") == "yes") {
+                alert("Пройдите капчу")
+                window.location.href = "captcha.html"
+            }
+            if (getCookie("IsReg") != "1") {
+                window.location.href = "index.html";
+            }
+            noCanvas(); // отключаем холст, если он не нужен
+            exit = createButton("Выйти в список чатов");
+            exit.position(0, 0)
+            exit.mousePressed(() => {
+                window.location.href = "homepage.html";
+            });
+            tittle = createP("Список обновлений(0.1.3)")
+            tittle.position(0, 5)
+            list = createP("0.1.3\nДобавлен список обновлений\nИсправлены некоторые баги\nДобавлено меню сообщения где его можно удалить или переименовать\nДобавлена капча(чтобы не было спама)\nДобавлено ограничение длинны сообщения в 150 символов\nТеперь ник подсвечивается так же как и у собеседника\nДобавлены настройки\nДобавлены аватарки\n0.1.2\nДобавлен цвет ника\nВ списке чатов видно последнее сообщение\nВ списке чатов новые сообщения помечаются специальным текстом\n0.1.1\nМессенжер создан")
+            list.position(0, 20)
+            list.style('white-space', 'pre-wrap');
+
+        }
+    </script>
+</body>
+
+</html>

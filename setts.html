@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - настройки</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="p5.js"></script>
+    <script src="cookie.js"></script>
+</head>
+
+<body>
+    <script>
+        let myButton;
+        let ss = getCookie("ss")
+        let pp = getCookie("pp");
+        let ps = getCookie("ps")
+        let globalres = ""
+
+        function Crypt(text) {
+            return encodeURIComponent(text);
+        }
+
+        function Decrypt(text) {
+            try {
+                return decodeURIComponent(text);
+            } catch (e) {
+                return text;
+            }
+        }
+
+        function setup() {
+
+            window.addEventListener("resize", () => {
+                console.log("Размер окна изменился:");
+                console.log("Новая ширина: " + window.innerWidth);
+                console.log("Новая высота: " + window.innerHeight);
+            });
+
+            function getProfUrl(pubk, element) {
+                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pubk + "_img")
+                    .then(response => response.text())
+                    .then(data => {
+                        data = Decrypt(data)
+                        console.log(data)
+                        if (data == "Файл не найден в save") {
+                            element.style('background-image', 'url("https://i.ibb.co/F4qyF7RN/blank.png")')
+                        } else {
+                            element.style('background-image', `url("${data}")`);
+
+                        }
+                    })
+                    .catch(error => {
+                        element.style('background-image', 'url("https://i.ibb.co/F4qyF7RN/blank.png")')
+                    });
+            }
+
+            function getProf(url) {
+                fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_img&text=" + Crypt(url))
+                    .then(response => response.text())
+                    .then(data => {
+                        alert("Картинка загружена")
+                        window.location.href = "setts.html"
+                    })
+                    .catch(error => {
+
+                    });
+            }
+
+            function uploadProf() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 512;
+                            canvas.height = 512;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, 512, 512);
+
+                            canvas.toBlob((blob) => {
+                                if (blob.size > 10 * 1024 * 1024) {
+                                    alert("Файл слишком большой после сжатия (>10MB)");
+                                    return;
+                                }
+
+                                const formData = new FormData();
+                                formData.append("image", blob);
+
+                                // 🔐 Вставь свой API ключ imgbb ниже
+                                const apiKey = "c77c07592cd1f730aacfb02824de3a17";
+                                const uploadUrl = "https://api.imgbb.com/1/upload?key=" + apiKey;
+
+                                fetch(uploadUrl, {
+                                        method: "POST",
+                                        body: formData
+                                    })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            const imageUrl = data.data.url;
+                                            getProf(imageUrl); // 🚀 Вызов твоей функции с ссылкой
+                                        } else {
+                                            console.error("Ошибка загрузки:", data);
+                                            alert("Не удалось загрузить изображение");
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error("Ошибка сети:", err);
+                                        alert("Ошибка загрузки изображения");
+                                    });
+
+                            }, 'image/jpeg', 0.9);
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                };
+
+                input.click(); // 🔔 Запускаем выбор файла
+            }
+
+            if (getCookie("captcha") == "yes") {
+                alert("Пройдите капчу")
+                window.location.href = "captcha.html"
+            }
+            if (getCookie("IsReg") != "1") {
+                window.location.href = "index.html";
+            }
+
+            noCanvas(); // отключаем холст, если он не нужен
+            let btn = createButton('');
+            getProfUrl(pp, btn)
+            btn.style('background-size', 'cover');
+            btn.mousePressed(() => {
+                uploadProf()
+            });
+            btn.size(32, 32)
+            let ext = createButton('Выход в меню');
+            ext.position(0, window.innerHeight - 50);
+            ext.size(window.innerWidth, 25);
+
+            ext.mousePressed(() => {
+                window.location.href = "homepage.html";
+            });
+
+            mail = createButton("Сменить адрес электронной почты");
+            mail.position(0, 150)
+            mail.size(window.innerWidth, 25)
+            mail.mousePressed(() => {
+                let newnik = prompt("Введите новый EMail,электронную почту (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)")
+                if (newnik == "" || newnik == null) {
+                    alert("Ник не может быть пустым!!")
+                } else {
+                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_mail&text=" + newnik)
+                        .then(response => response.text())
+                        .then(data => {
+                            globalres = data; // вызываем только после получения данных
+                            console.log(globalres);
+                            alert("Новый адрес установлен: " + newnik)
+                            window.location.href = "setts.html"; // выводим уже присвоенное значение
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при получении данных:", error);
+                        });
+                }
+            });
+            //Ник
+            function getRandomBrightColor() {
+                const brightColors = [
+                    'FF5733', 'FF8C00', 'FFD700', 'ADFF2F', '00FF7F', '00FFFF', '1E90FF', '4169E1',
+                    '9932CC', 'FF69B4', 'FF1493', 'FF4500', '32CD32', '00CED1', 'DC143C', '8A2BE2',
+                    'FF6347', 'FFA07A', 'FF7F50', 'FFB6C1', 'FA8072', 'F08080', 'F0E68C', 'EEE8AA',
+                    'DAA520', 'B8860B', 'D2691E', 'CD5C5C', '8B0000', 'A52A2A', 'B22222', 'BC8F8F',
+                    'FF00FF', '8B008B', '9400D3', 'BA55D3', '9370DB', '7B68EE', '6A5ACD', '483D8B',
+                    '6495ED', '40E0D0', '48D1CC', '00BFFF', '87CEFA', '87CEEB', '4682B4', '5F9EA0',
+                    '00FA9A', '00FF00', '7FFF00', '7CFC00', '32CD32', '98FB98', '90EE90', '8FBC8F',
+                    '3CB371', '2E8B57', '228B22', '006400', '66CDAA', '20B2AA', '008B8B', '008080',
+                    'B0E0E6', 'AFEEEE', 'ADD8E6', 'B0C4DE', '778899', '708090', 'BEBEBE', 'D3D3D3',
+                    'C0C0C0', 'A9A9A9', '808080', '696969', '2F4F4F', '000000', 'FFFFFF', 'F5F5F5',
+                    'FFE4B5', 'FFEBCD', 'FFF0F5', 'FFFACD', 'FAFAD2', 'FFEFD5', 'FFDAB9', 'E6E6FA',
+                    'D8BFD8', 'DDA0DD', 'EE82EE', 'DA70D6', 'FF00FF', 'C71585', 'DB7093', 'FF1493',
+                    'FF69B4', 'FFC0CB', 'FFA07A', 'FF7F50', 'FF6347', 'FF4500', 'FF8C00', 'FFA500',
+                    'FFD700', 'FFFF00', 'FFFFE0', 'F0E68C', 'EEDD82', 'DAA520', 'BDB76B', 'B8860B'
+                ];
+                const randomIndex = Math.floor(Math.random() * brightColors.length);
+                console.log(randomIndex)
+                return brightColors[randomIndex];
+            }
+            let mynik
+            console.log(getRandomBrightColor())
+            let colour = createButton("Сменить случайный цвет ника");
+            colour.position(0, 100)
+            colour.size(window.innerWidth, 25)
+            fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_colour")
+                .then(response => response.text())
+                .then(data => {
+                    let data5 = data
+                    console.log(data)
+                    if (data == "Файл не найден в save") {
+                        crush
+                    }
+
+                    fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_profn")
+                        .then(response => response.text())
+                        .then(data => {
+                            mynik = createP(data)
+                            mynik.style('background-color', "#" + data5);
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при получении данных:", error);
+                            alert("Ошибка получения ника! Видно нет интернета!!!")
+                        });
+
+
+                })
+                .catch(error => {
+                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_colour&text=" + getRandomBrightColor())
+                        .then(response => response.text())
+                        .then(data => {
+                            globalres = data; // вызываем только после получения данных
+                            console.log(globalres);
+                            window.location.href = "setts.html"; // выводим уже присвоенное значение
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при получении данных:", error);
+                            alert("Проверьте интернет!!! Он возможно ламатый у вас!")
+                        });
+                });
+            colour.mousePressed(() => {
+                fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_colour&text=" + getRandomBrightColor())
+                    .then(response => response.text())
+                    .then(data => {
+                        globalres = data; // вызываем только после получения данных
+                        console.log(globalres);
+                        window.location.href = "setts.html"; // выводим уже присвоенное значение
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                        alert("Проверьте интернет!!! Он возможно ламатый у вас!")
+                    });
+            });
+            let changebutton = createButton("Сменить ник");
+            changebutton.position(0, 125)
+            changebutton.size(window.innerWidth, 25)
+            changebutton.mousePressed(() => {
+                let newnik = prompt("Введите новое имя/ник/заголовок (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)")
+                if (newnik == "" || newnik == null) {
+                    alert("Ник не может быть пустым!!")
+                } else {
+                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_profn&text=" + newnik)
+                        .then(response => response.text())
+                        .then(data => {
+                            globalres = data; // вызываем только после получения данных
+                            console.log(globalres);
+                            window.location.href = "setts.html"; // выводим уже присвоенное значение
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при получении данных:", error);
+                        });
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

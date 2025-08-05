@@ -23,12 +23,20 @@
                     ...options // если есть свои параметры — они переопределят дефолтные
                 });
             }
+            let candir = true
+            if (getCookie("captcha") == "yes") {
+                alert("Пройдите капчу")
+                window.location.href = "captcha.html"
+                candir = false
+            }
 
             function getRandomFromRange(min, max) {
                 return Math.floor(Math.random() * (max - min + 1)) + min;
             }
             if (getCookie("IsReg") == "1") {
-                window.location.href = "homepage.html";
+                if (candir) {
+                    window.location.href = "homepage.html";
+                }
             }
 
             noCanvas(); // отключаем холст, если он не нужен

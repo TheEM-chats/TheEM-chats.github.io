@@ -22,8 +22,29 @@
         let objs = []
         let subut
         let container
+        let btnCancel
+        let btnDelete
+        let btnEdit
+        let btnText
+        let msgs = 1
+        let timer1 = 1
+        let lastmsg
 
         function setup() {
+            if (getCookie("captcha") == "yes") {
+                alert("Пройдите капчу")
+                window.location.href = "captcha.html"
+            }
+            overlay = createButton("")
+            overlay.position(0, 0);
+            overlay.size(windowWidth, windowHeight);
+            overlay.style('background', 'rgba(0, 0, 0, 0.6)');
+            overlay.style('position', 'fixed');
+            overlay.style('z-index', '100');
+            overlay.style('pointer-events', 'auto');
+            overlay.mousePressed(() => {
+                console.log("На оверлей тыкать низя!")
+            });
             if (getCookie("IsReg") != "1" || getCookie("name") == getCookie("ываываывауцкцуквпыпewwerwr") || getCookie("name") == "undefined") {
                 window.location.href = "homepage.html";
             }
@@ -39,6 +60,22 @@
                     return text;
                 }
             }
+
+            function OvlayShow() {
+                overlay.style('background', 'rgba(0, 0, 0, 0.6)');
+                overlay.style('z-index', '100');
+            }
+
+            function OvlayHide() {
+                overlay.style('background', '#ffffff');
+                overlay.style('z-index', '-100');
+                btnCancel.remove()
+                btnDelete.remove()
+                btnEdit.remove()
+                btnText.remove()
+            }
+            overlay.style('background', '#ffffff');
+            overlay.style('z-index', '-100');
 
             function SoundEffect(filename) {
                 const audio = new Audio(filename);
@@ -70,10 +107,91 @@
                     ...options // если есть свои параметры — они переопределят дефолтные
                 });
             }
+            setInterval(() => {
+                timer1++
+                if (timer1 == 16) {
+                    timer1 = 1
+                    msgs = 0
+                }
+                if (msgs > 10) {
+                    alert("НЕ ОТПРАВЛЯЙТЕ МНОГО СООБЩЕНИЙ, ИНАЧЕ БУДЕТ СЛОЖНАЯ КАПТЧА")
+                }
+                if (msgs > 15) {
+                    setCookie2("captcha", "yes")
+                    window.location.href = "captcha.html"
+                }
+                console.log(timer1)
+                console.log(msgs)
+
+            }, 1000);
+
+            function MenuShow(editnum) {
+                if (history[editnum].sender == pp) {
+                    console.log("Меню для моего сообщения")
+                    btnText = createButton(history[editnum].value)
+                    btnText.position(windowWidth / 10, 50);
+                    btnText.size(windowWidth - windowWidth / 10 - windowWidth / 10, 25)
+                    btnText.style('position', 'fixed');
+                    btnText.style('z-index', '101');
+                    btnText.style('border-radius', '8px');
+
+
+                    btnEdit = createButton('Изменить');
+                    btnEdit.position(0, 100);
+                    btnEdit.size(windowWidth, 50)
+                    btnEdit.style('position', 'fixed');
+                    btnEdit.style('z-index', '101');
+                    btnEdit.style('background-color', '#3366cc');
+                    btnEdit.mousePressed(() => {
+                        let place = prompt("Новое сообщение:")
+                        if (place !== "" && place !== null) {
+                            history[editnum].prevvalue = history[editnum].value
+                            history[editnum].value = place + " (изменено)"
+                            history[editnum].time = Math.floor(Date.now() / 1000)
+                            pushAll()
+                        }
+                        OvlayHide()
+                    });
+
+                    btnDelete = createButton('Удалить');
+                    btnDelete.position(0, 150);
+                    btnDelete.size(windowWidth, 50)
+                    btnDelete.style('position', 'fixed');
+                    btnDelete.style('z-index', '101');
+                    btnDelete.style('background-color', '#ff5733');
+                    btnDelete.mousePressed(() => {
+                        history[editnum].prevsender = history[editnum].sender
+                        history[editnum].prevvalue = history[editnum].value
+                        history[editnum].sender = "system"
+                        history[editnum].value = "Удалённое сообщение"
+                        history[editnum].type = "text"
+                        pushAll()
+                        OvlayHide()
+                    });
+
+                    btnCancel = createButton('Отмена');
+                    btnCancel.position(0, 200);
+                    btnCancel.size(windowWidth, 50)
+                    btnCancel.style('position', 'fixed');
+                    btnCancel.style('z-index', '101');
+                    btnCancel.style('background-color', '#b3b3b3');
+                    btnCancel.mousePressed(() => {
+                        OvlayHide()
+                    });
+
+                } else if (history[editnum].sender == "system") {
+                    console.log("Системное сообщение : меню не доступно")
+                    OvlayHide()
+                } else {
+                    console.log("Чужое сообщение, пока не доступно")
+                    OvlayHide()
+                }
+            }
 
             function render() {
                 //setCookie2(getCookie("chatid") + "_history", JSON.stringify(history))
-                fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_oldchat" + getCookie("chatid") + "&text=" + Crypt(JSON.stringify(history)))
+                let schatix = history[history.length - 1]
+                fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_oldchat" + getCookie("chatid") + "&text=" + Crypt(JSON.stringify(schatix)))
                     .then(response => response.text())
                     .then(data => {
                         globalres = data;
@@ -129,6 +247,12 @@
                         objs[num].style('border-radius', '12px');
 
                         container.child(objs[num]);
+                        let mynum = num
+                        objs[num].mousePressed(() => {
+                            OvlayShow()
+                            MenuShow(mynum)
+                            console.log(mynum)
+                        });
                     }
 
                     num--
@@ -136,12 +260,17 @@
                 superbutton.remove()
             }
 
+
+
             function update() {
                 console.log("Обновление")
                 fetch("https://sebain.pythonanywhere.com/get?filename=chat_" + getCookie("chatid"))
                     .then(response => response.text())
-                    .then(data => {
-                        data = Decrypt(data)
+                    .then(data2 => {
+                        data2 = Decrypt(data2)
+                        let data = JSON.stringify(JSON.parse(data2))
+                        console.log(data)
+                        console.log(JSON.stringify(history))
                         if (data == JSON.stringify(history)) {
                             console.log("Новых сообщений нет")
                         } else {
@@ -158,24 +287,73 @@
             }
 
             function push() {
-                SoundEffect("push.mp3")
+                if (lastmsg == history[history.length - 1].value) {
+                    history.splice(history.length - 1, 1);
+                } else {
+                    lastmsg = history[history.length - 1].value;
+                    msgs++;
+                    SoundEffect("push.mp3");
+                    historyP = history[history.length - 1];
+                    let pushing = JSON.stringify(historyP);
+                    console.log(pushing);
+                    fetch("https://sebain.pythonanywhere.com/push?filename=chat_" + getCookie("chatid") + "&text=" + Crypt(pushing))
+                        .then(response => response.text())
+                        .then(data => {
+                            console.log("Загрузка " + data);
+                            render();
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при получении данных:", error);
+                        });
+                }
+            }
+
+            function pushAll() {
+                msgs++;
+                SoundEffect("push.mp3");
+
                 let pushing = JSON.stringify(history);
-                fetch("https://sebain.pythonanywhere.com/set?filename=chat_" + getCookie("chatid") + "&text=" + Crypt(pushing))
+                let payload = {
+                    filename: "chat_" + getCookie("chatid"),
+                    text: pushing
+                };
+
+                fetch("https://sebain.pythonanywhere.com/set_post", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    })
                     .then(response => response.text())
                     .then(data => {
-                        console.log("Загрузка" + data)
-                        render()
+                        console.log("Загрузка " + data);
+                        render();
                     })
                     .catch(error => {
                         console.error("Ошибка при получении данных:", error);
                     });
             }
+
+
             window.addEventListener("resize", () => {
+                ban.position(window.innerWidth - 80, 0)
                 send.position(window.innerWidth - 90, window.innerHeight - 30)
                 input.position(0, window.innerHeight - 30)
                 input.size(window.innerWidth - 100, 20)
                 container.size(window.innerWidth - 75, window.innerHeight - 100)
                 container.position(0, 25)
+                overlay.size(windowWidth, windowHeight);
+                try {
+                    btnText.position(windowWidth / 10, 50);
+                    btnText.size(windowWidth - windowWidth / 10 - windowWidth / 10, 25)
+                    btnEdit.size(windowWidth, 50)
+                    btnDelete.size(windowWidth, 50)
+                    btnCancel.size(windowWidth, 50)
+                } catch {
+                    console.log("Не нашёл я оверлей")
+                }
+
             });
             noCanvas(); // отключаем холст, если он не нужен
             update()
@@ -226,17 +404,40 @@
                         })
                         .then(response => response.text())
                         .then(() => {
-                            alert("Удалено!");
+
                             history.push({
                                 type: 'text',
                                 value: "Собеседник удалил переписку, слать сюда чтото бесполезно!",
                                 sender: "system",
                                 time: Math.floor(Date.now() / 1000)
                             });
-                            push()
-                            setInterval(() => {
-                                window.location.href = "homepage.html"
-                            }, 5000)
+
+                            SoundEffect("push.mp3");
+
+                            let pushing = JSON.stringify(history);
+                            let payload = {
+                                filename: "chat_" + getCookie("chatid"),
+                                text: pushing
+                            };
+
+                            fetch("https://sebain.pythonanywhere.com/set_post", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify(payload)
+                                })
+                                .then(response => response.text())
+                                .then(data => {
+                                    console.log("Загрузка" + data);
+                                    render();
+                                    alert("Удалено!");
+                                    window.location.href = "homepage.html";
+                                })
+                                .catch(error => {
+                                    console.error("Ошибка при получении данных:", error);
+                                });
+
                         })
                         .catch(error => {
                             console.error("Ошибка при удалении:", error);
@@ -253,15 +454,26 @@
             send.position(window.innerWidth - 90, window.innerHeight - 30)
             send.size(75, 25)
 
+            function getTextLength(text) {
+                return text.length;
+            }
+
             function sent(message) {
-                input.value("")
-                history.push({
-                    type: 'text',
-                    value: message,
-                    sender: pp,
-                    time: Math.floor(Date.now() / 1000)
-                });
-                push()
+                console.log(getTextLength(message))
+                if (getTextLength(message) > 150) {
+                    alert("Длинное сообщение")
+                } else {
+                    if (message != "") {
+                        input.value("")
+                        history.push({
+                            type: 'text',
+                            value: message,
+                            sender: pp,
+                            time: Math.floor(Date.now() / 1000)
+                        });
+                        push()
+                    }
+                }
             }
             input.elt.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {

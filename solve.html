@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>p5.js старт</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="p5.js"></script>
+    <script src="cookie.js"></script>
+</head>
+
+<body>
+    <script>
+        let myButton;
+
+        function setup() {
+            noCanvas(); // отключаем холст, если он не нужен
+            function setCookie2(name, value, options) {
+                setCookie(name, value, {
+                    expires: new Date('2035-12-31T23:59:59Z'),
+                    path: '/',
+                    secure: true,
+                    samesite: 'strict',
+                    ...options // если есть свои параметры — они переопределят дефолтные
+                });
+            }
+            setCookie2("captcha", "no")
+            window.location.href = "index.html"
+        }
+    </script>
+</body>
+
+</html>
