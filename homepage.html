@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.png" type="image/png">
 
 <head>
     <meta charset="UTF-8" />
@@ -192,10 +193,11 @@
                 return Math.floor(Math.random() * (max - min + 1)) + min;
             }
             window.addEventListener("resize", () => {
+                idtext.position(5, window.innerHeight - 125)
+                scradd.position(window.innerWidth - 155, window.innerHeight - 135)
                 setts.position(window.innerWidth - 84, 15)
                 overlay.size(windowWidth, windowHeight);
                 updates.position(window.innerWidth - 300, window.innerHeight - 75)
-                idtext.position(0, window.innerHeight - 35)
                 addbutton.position(window.innerWidth - 150, window.innerHeight - 75)
                 let num = chatbuttons.length - 1
                 while (num > -1) {
@@ -375,6 +377,8 @@
             updates.mousePressed(() => {
                 window.location.href = "update.html";
             });
+            updates.style('position', 'fixed');
+            updates.style('z-index', '101');
             let setts = createButton("Настройки")
             setts.style('background-color', '#cccccc');
             setts.style('border-radius', '12px');
@@ -382,8 +386,54 @@
             setts.mousePressed(() => {
                 window.location.href = "setts.html";
             });
+            let scradd = createButton("Как установить наше приложение(всего 3 шага)")
+            scradd.style('background-color', '#cccccc');
+            scradd.style('border-radius', '12px');
+            scradd.position(window.innerWidth - 155, window.innerHeight - 135)
+            scradd.mousePressed(() => {
+                // Картинка-фон
+                let thismg = createButton("");
+                thismg.parent(document.body);
+                thismg.style('position', 'fixed');
+                thismg.style('top', '0');
+                thismg.style('left', '0');
+                thismg.style('width', '100vw');
+                thismg.style('height', '100vh');
+                thismg.style('border', 'none');
+                thismg.style('z-index', '9999');
+                thismg.style('background-image', 'url("https://i.ibb.co/JwGpSP6k/how.jpg")');
+                thismg.style('background-size', 'contain'); // сохраняет пропорции картинки
+                thismg.style('background-position', 'center');
+                thismg.style('background-repeat', 'no-repeat');
+                thismg.style('background-color', '#000'); // на случай, если картинка не на весь экран
+
+                // Кнопка закрытия — в левом верхнем углу
+                let cbtn = createButton("✕");
+                cbtn.parent(document.body);
+                cbtn.style('position', 'fixed');
+                cbtn.style('top', '15px');
+                cbtn.style('left', '15px');
+                cbtn.style('z-index', '10000');
+                cbtn.style('padding', '10px 15px');
+                cbtn.style('font-size', '18px');
+                cbtn.style('background', '#fff');
+                cbtn.style('border', '1px solid #000');
+                cbtn.style('border-radius', '5px');
+                cbtn.style('cursor', 'pointer');
+
+                // Закрытие картинки и кнопки
+                cbtn.mousePressed(() => {
+                    thismg.remove();
+                    cbtn.remove();
+                });
+            });
+            scradd.style('position', 'fixed');
+            scradd.style('z-index', '101');
             let idtext = createP("Ваш id:" + pp)
-            idtext.position(0, window.innerHeight - 35)
+            idtext.position(5, window.innerHeight - 125)
+            idtext.style('position', 'fixed');
+            idtext.style('z-index', '101');
+            idtext.style('background-color', "#ffffff");
             let addbutton = createButton("Добавить по ID")
             addbutton.style('background-color', '#339933');
             addbutton.style('border-radius', '12px');
@@ -477,17 +527,15 @@
                 } else {
                     alert("Не верный Id")
                 }
-
-
-
-
-
             });
+            addbutton.style('position', 'fixed');
+            addbutton.style('z-index', '101');
         }
     </script>
     <!-- start webpushr code -->
     <script>
         function _webpushrScriptReady() {
+            console.log(getCookie("ss"))
             webpushr('attributes', {
                 "key1": "value",
                 'user_id': getCookie("ss")
