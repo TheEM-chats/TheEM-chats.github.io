@@ -487,6 +487,12 @@
     </script>
     <!-- start webpushr code -->
     <script>
+        function _webpushrScriptReady() {
+            webpushr('attributes', {
+                "key1": "value",
+                'user_id': getCookie("ss")
+            });
+        }
         (function(w, d, s, id) {
             if (typeof(w.webpushr) !== 'undefined') return;
             w.webpushr = w.webpushr || function() {
