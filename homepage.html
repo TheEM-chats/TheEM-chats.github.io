@@ -14,6 +14,8 @@
 
 <body>
     <script>
+        let canreload = true
+        let banwords = new Set();
         let myButton;
         let ss = getCookie("ss")
         let pp = getCookie("pp");
@@ -23,6 +25,34 @@
         let chatimgs = []
 
         function setup() {
+            function filterTextWithBanwords(inputText) {
+                if (banwords.size === 0) {
+                    console.warn('Список banwords ещё не загружен');
+                    return inputText;
+                }
+
+                // Разбиваем на слова, пробелы и знаки препинания
+                const tokens = inputText.match(/[\wа-яА-ЯёЁ]+|[^\w\s]|[\s]+/g);
+
+                const filtered = tokens.map(token => {
+                    const normalized = token.toLowerCase().replace(/[^а-яa-z0-9]/gi, '');
+                    return banwords.has(normalized) ? '(мат)' : token;
+                });
+
+                return filtered.join('');
+            }
+            // Загружаем banwords.txt при старте
+            fetch('/banword.txt')
+                .then(res => res.text())
+                .then(text => {
+                    text
+                        .split(/\r?\n/)
+                        .map(w => w.trim().toLowerCase())
+                        .forEach(w => {
+                            if (w.length > 0) banwords.add(w);
+                        });
+                    console.log(`Загружено ${banwords.size} запрещённых слов`);
+                });
             overlay = createButton("")
             overlay.position(0, 0);
             overlay.size(windowWidth, windowHeight);
@@ -217,6 +247,7 @@
             }
 
             //Загрузка чатов
+
             fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_chats")
                 .then(response => response.text())
                 .then(data => {
@@ -238,6 +269,7 @@
                                 let xid = tchats[xnum].chatid
                                 let tbutton = createButton(data)
                                 let xdata = data
+                                let targ = tchats[xnum].target
                                 tbutton.style('white-space', 'pre-wrap');
                                 //tbutton.html("Текст")
                                 tbutton.position(0, xpos)
@@ -250,8 +282,22 @@
                                     setCookie2("chatid", xid)
                                     setCookie2("name", data)
                                     setCookie2("colour", clr)
+                                    setCookie2("target", targ)
                                     window.location.href = "chat.html";
                                 });
+                                tbutton.style("border-width", "3px");
+                                tbutton.style("border-color", "#00004d");
+                                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + targ + "_last-online&text=" + Math.floor(Date.now() / 1000))
+                                    .then(response => response.text())
+                                    .then(data => {
+                                        let dif1 = Math.floor(Date.now() / 1000) - data
+                                        let dstate
+                                        if (dif1 < 60) {
+                                            tbutton.style("border-width", "3px");
+                                            tbutton.style("border-color", "#009900");
+                                        }
+                                    })
+                                    .catch(error => {});
                                 let btn = createButton('');
                                 getProfUrl(tchats[xnum].target, btn)
                                 btn.style('background-size', 'cover');
@@ -290,7 +336,11 @@
                                                 if (JSON.stringify(new1) == JSON.stringify(old1)) {
                                                     let history = JSON.parse(history_newJSON)
                                                     let l = history.length - 1
-                                                    tbutton.html(xdata + " [ПОСЛЕДНЕЕ]\n" + shortenText(history[l].value))
+                                                    let text = history[l].value
+                                                    if (getCookie("nofilt") != 1) {
+                                                        text = filterTextWithBanwords(text);
+                                                    }
+                                                    tbutton.html(xdata + " [ПОСЛЕДНЕЕ]\n" + shortenText(text))
 
                                                 } else {
                                                     tbutton.html(xdata + " [НОВОЕ]")
@@ -322,7 +372,7 @@
                             .catch(error => {
                                 console.error("Ошибка при получении данных:", error);
                             });
-                        pos = pos + 35
+                        pos = pos + 33
                         btnum++
                         num--
                     }
@@ -369,6 +419,20 @@
                             alert("Проверьте интернет!!! Он возможно ламатый у вас!")
                         });
                 });
+            // Таймер обновления
+            setInterval(() => {
+                if (canreload) {
+                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_last-online&text=" + Math.floor(Date.now() / 1000))
+                        .then(response => response.text())
+                        .then(data => {
+                            window.location.href = "homepage.html"
+                        })
+                        .catch(error => {
+                            window.location.href = "homepage.html"
+                        });
+
+                }
+            }, 15000); // 5000 миллисекунд = 5 секунд
             // Остальное 
             let updates = createButton("Список обновлений")
             updates.style('background-color', '#ff9933');
@@ -391,7 +455,8 @@
             scradd.style('border-radius', '12px');
             scradd.position(window.innerWidth - 155, window.innerHeight - 135)
             scradd.mousePressed(() => {
-                // Картинка-фон
+                canreload = false
+                    // Картинка-фон
                 let thismg = createButton("");
                 thismg.parent(document.body);
                 thismg.style('position', 'fixed');
@@ -425,6 +490,7 @@
                 cbtn.mousePressed(() => {
                     thismg.remove();
                     cbtn.remove();
+                    canreload = true
                 });
             });
             scradd.style('position', 'fixed');
@@ -439,6 +505,7 @@
             addbutton.style('border-radius', '12px');
             addbutton.position(window.innerWidth - 150, window.innerHeight - 75)
             addbutton.mousePressed(() => {
+                canreload = false
                 let globalres = ""
                 let addid = prompt("Введите id вашего собеседника")
                 if (addid != pp || addid != "" || addid != "1") {
@@ -467,7 +534,7 @@
                                 let ourJSON = JSON.stringify(our)
                                 let placeholder = [{
                                     type: 'text',
-                                    value: "Чтобы сообщения из этого чата приходили вам на почту: отправьте сюда любое сообщение",
+                                    value: "А вы знали что?: если нажать в списке чатов на колокол , затем нажать разрешить и ещё раз разрешить то вы будете получать уведомления в ваших чатах!",
                                     sender: "system",
                                     time: Math.floor(Date.now() / 1000)
                                 }];

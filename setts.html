@@ -31,6 +31,20 @@
             }
         }
 
+        function setCookie2(name, value, options) {
+            setCookie(name, value, {
+                expires: new Date('2035-12-31T23:59:59Z'),
+                path: '/',
+                secure: true,
+                samesite: 'strict',
+                ...options // если есть свои параметры — они переопределят дефолтные
+            });
+        }
+
+        function getRandomFromRange(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
         function setup() {
 
             window.addEventListener("resize", () => {
@@ -152,26 +166,31 @@
             ext.mousePressed(() => {
                 window.location.href = "homepage.html";
             });
-
-            mail = createButton("Сменить адрес электронной почты");
+            let bwstate
+            if (getCookie("nofilt") == 1) {
+                bwstate = "(отключен)"
+            } else {
+                bwstate = "(включен)"
+            }
+            mail = createButton("Фильтр матов " + bwstate);
             mail.position(0, 150)
             mail.size(window.innerWidth, 25)
             mail.mousePressed(() => {
-                let newnik = prompt("Введите новый EMail,электронную почту (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)")
-                if (newnik == "" || newnik == null) {
-                    alert("Ник не может быть пустым!!")
+                if (getCookie("nofilt") == 1) {
+                    setCookie2("nofilt", "vkly")
+                    alert("Фильтр матов включен!")
+                    window.location.href = "setts.html";
                 } else {
-                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_mail&text=" + newnik)
-                        .then(response => response.text())
-                        .then(data => {
-                            globalres = data; // вызываем только после получения данных
-                            console.log(globalres);
-                            alert("Новый адрес установлен: " + newnik)
-                            window.location.href = "setts.html"; // выводим уже присвоенное значение
-                        })
-                        .catch(error => {
-                            console.error("Ошибка при получении данных:", error);
-                        });
+                    let f = getRandomFromRange(10, 100)
+                    let s = getRandomFromRange(10, 100)
+                    let ans = prompt("Реши пример чтобы отключить:" + f + "+" + s)
+                    if (ans == f + s) {
+                        setCookie2("nofilt", "1")
+                        alert("Фильтр матов отключен!")
+                        window.location.href = "setts.html";
+                    } else {
+                        alert("Пример решён не верно!")
+                    }
                 }
             });
             //Ник

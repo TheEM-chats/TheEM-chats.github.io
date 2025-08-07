@@ -14,6 +14,7 @@
 
 <body>
     <script>
+        let banwords = new Set();
         let ss = getCookie("ss")
         let pp = getCookie("pp");
         let ps = getCookie("ps")
@@ -29,8 +30,14 @@
         let msgs = 1
         let timer1 = 1
         let lastmsg
+        let editmenu = 0
 
         function setup() {
+
+
+            function getRandomFromRange(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
             if (getCookie("captcha") == "yes") {
                 alert("Пройдите капчу")
                 window.location.href = "captcha.html"
@@ -107,16 +114,17 @@
                     ...options // если есть свои параметры — они переопределят дефолтные
                 });
             }
+            setCookie2("cok", "")
             setInterval(() => {
                 timer1++
                 if (timer1 == 16) {
                     timer1 = 1
                     msgs = 0
                 }
-                if (msgs > 10) {
+                if (msgs > 7) {
                     alert("НЕ ОТПРАВЛЯЙТЕ МНОГО СООБЩЕНИЙ, ИНАЧЕ БУДЕТ СЛОЖНАЯ КАПТЧА")
                 }
-                if (msgs > 15) {
+                if (msgs > 10) {
                     setCookie2("captcha", "yes")
                     window.location.href = "captcha.html"
                 }
@@ -127,57 +135,88 @@
 
             function MenuShow(editnum) {
                 if (history[editnum].sender == pp) {
-                    console.log("Меню для моего сообщения")
-                    btnText = createButton(history[editnum].value)
-                    btnText.position(windowWidth / 10, 50);
-                    btnText.size(windowWidth - windowWidth / 10 - windowWidth / 10, 25)
-                    btnText.style('position', 'fixed');
-                    btnText.style('z-index', '101');
-                    btnText.style('border-radius', '8px');
+                    try {
+                        let uid = history[editnum].uid
+                        if (uid != history[editnum].wewretertsfd) {
+                            console.log("Меню для моего сообщения")
+                            btnText = createButton(history[editnum].value)
+                            btnText.position(windowWidth / 10, 50);
+                            btnText.size(windowWidth - windowWidth / 10 - windowWidth / 10, 25)
+                            btnText.style('position', 'fixed');
+                            btnText.style('z-index', '101');
+                            btnText.style('border-radius', '8px');
 
 
-                    btnEdit = createButton('Изменить');
-                    btnEdit.position(0, 100);
-                    btnEdit.size(windowWidth, 50)
-                    btnEdit.style('position', 'fixed');
-                    btnEdit.style('z-index', '101');
-                    btnEdit.style('background-color', '#3366cc');
-                    btnEdit.mousePressed(() => {
-                        let place = prompt("Новое сообщение:")
-                        if (place !== "" && place !== null) {
-                            history[editnum].prevvalue = history[editnum].value
-                            history[editnum].value = place + " (изменено)"
-                            history[editnum].time = Math.floor(Date.now() / 1000)
-                            pushAll()
+                            btnEdit = createButton('Изменить');
+                            btnEdit.position(0, 100);
+                            btnEdit.size(windowWidth, 50)
+                            btnEdit.style('position', 'fixed');
+                            btnEdit.style('z-index', '101');
+                            btnEdit.style('background-color', '#3366cc');
+                            btnEdit.mousePressed(() => {
+                                editmenu = 1
+                                let place = prompt("Новое сообщение:")
+                                if (place !== "" && place !== null) {
+                                    history[editnum].prevvalue = history[editnum].value
+                                    history[editnum].value = place + " (изменено)"
+                                    history[editnum].time = Math.floor(Date.now() / 1000)
+                                    fetch("https://sebain.pythonanywhere.com/changer?filename=chat_" + getCookie("chatid") + "&text=" + JSON.stringify(history[editnum]) + "&uid=" + uid)
+                                        .then(response => response.text())
+                                        .then(data => {
+                                            SoundEffect("push.mp3")
+                                            editmenu = 0
+                                            render()
+                                            OvlayHide()
+                                        })
+                                        .catch(error => {
+                                            editmenu = 0
+                                            console.error("Ошибка при получении данных:", error);
+                                        });
+                                } else {
+                                    editmenu = 0
+                                }
+
+                            });
+
+                            btnDelete = createButton('Удалить');
+                            btnDelete.position(0, 150);
+                            btnDelete.size(windowWidth, 50)
+                            btnDelete.style('position', 'fixed');
+                            btnDelete.style('z-index', '101');
+                            btnDelete.style('background-color', '#ff5733');
+                            btnDelete.mousePressed(() => {
+                                history[editnum].prevsender = history[editnum].sender
+                                history[editnum].prevvalue = history[editnum].value
+                                history[editnum].sender = "system"
+                                history[editnum].value = "Удалённое сообщение"
+                                history[editnum].type = "text"
+                                fetch("https://sebain.pythonanywhere.com/changer?filename=chat_" + getCookie("chatid") + "&text=" + JSON.stringify(history[editnum]) + "&uid=" + uid)
+                                    .then(response => response.text())
+                                    .then(data => {
+                                        SoundEffect("push.mp3")
+                                        render()
+                                        OvlayHide()
+                                    })
+                                    .catch(error => {
+                                        console.error("Ошибка при получении данных:", error);
+                                    });
+                            });
+
+                            btnCancel = createButton('Отмена');
+                            btnCancel.position(0, 200);
+                            btnCancel.size(windowWidth, 50)
+                            btnCancel.style('position', 'fixed');
+                            btnCancel.style('z-index', '101');
+                            btnCancel.style('background-color', '#b3b3b3');
+                            btnCancel.mousePressed(() => {
+                                OvlayHide()
+                            });
+                        } else {
+                            OvlayHide()
                         }
-                        OvlayHide()
-                    });
-
-                    btnDelete = createButton('Удалить');
-                    btnDelete.position(0, 150);
-                    btnDelete.size(windowWidth, 50)
-                    btnDelete.style('position', 'fixed');
-                    btnDelete.style('z-index', '101');
-                    btnDelete.style('background-color', '#ff5733');
-                    btnDelete.mousePressed(() => {
-                        history[editnum].prevsender = history[editnum].sender
-                        history[editnum].prevvalue = history[editnum].value
-                        history[editnum].sender = "system"
-                        history[editnum].value = "Удалённое сообщение"
-                        history[editnum].type = "text"
-                        pushAll()
-                        OvlayHide()
-                    });
-
-                    btnCancel = createButton('Отмена');
-                    btnCancel.position(0, 200);
-                    btnCancel.size(windowWidth, 50)
-                    btnCancel.style('position', 'fixed');
-                    btnCancel.style('z-index', '101');
-                    btnCancel.style('background-color', '#b3b3b3');
-                    btnCancel.mousePressed(() => {
-                        OvlayHide()
-                    });
+                    } catch {
+                        console.log("Нету uid!")
+                    }
 
                 } else if (history[editnum].sender == "system") {
                     console.log("Системное сообщение : меню не доступно")
@@ -195,7 +234,6 @@
                     .then(response => response.text())
                     .then(data => {
                         globalres = data;
-                        setCookie2('cok', globalres); // вызываем только после получения данных
                         console.log(globalres); // выводим уже присвоенное значение
                     })
                     .catch(error => {
@@ -207,7 +245,11 @@
                 let autor
                 let num = objs.length - 1
                 while (num > -1) {
-                    objs[num].remove()
+                    try {
+                        objs[num].remove()
+                    } catch {
+                        console.log("НЕ УДАЛЕНО!")
+                    }
                     num--
                 }
                 num = history.length - 1
@@ -239,8 +281,11 @@
 
                         let time = date.toLocaleString('ru-RU', options);
                         console.log(time); // "11:00 30 июля 2025 г."
-
-                        objs[num] = createButton(time + "\n" + autor + history[num].value)
+                        let text = history[num].value
+                        if (getCookie("nofilt") != 1) {
+                            text = filterTextWithBanwords(text);
+                        }
+                        objs[num] = createButton(time + "\n" + autor + text)
                         objs[num].style('white-space', 'pre-wrap');
                         objs[num].style('text-align', 'left');
                         objs[num].style('background-color', colour); // фон кнопки
@@ -263,27 +308,29 @@
 
 
             function update() {
-                console.log("Обновление")
-                fetch("https://sebain.pythonanywhere.com/get?filename=chat_" + getCookie("chatid"))
-                    .then(response => response.text())
-                    .then(data2 => {
-                        data2 = Decrypt(data2)
-                        let data = JSON.stringify(JSON.parse(data2))
-                        console.log(data)
-                        console.log(JSON.stringify(history))
-                        if (data == JSON.stringify(history)) {
-                            console.log("Новых сообщений нет")
-                        } else {
-                            SoundEffect("msg.mp3")
-                            history = JSON.parse(data)
-                            render()
-                        }
+                if (editmenu == 0) {
+                    console.log("Обновление")
+                    fetch("https://sebain.pythonanywhere.com/get?filename=chat_" + getCookie("chatid"))
+                        .then(response => response.text())
+                        .then(data2 => {
+                            data2 = Decrypt(data2)
+                            let data = JSON.stringify(JSON.parse(data2))
+                            console.log(data)
+                            console.log(JSON.stringify(history))
+                            if (data == JSON.stringify(history)) {
+                                console.log("Новых сообщений нет")
+                            } else {
+                                SoundEffect("msg.mp3")
+                                history = JSON.parse(data)
+                                render()
+                            }
 
 
-                    })
-                    .catch(error => {
-                        console.error("Ошибка при получении данных:", error);
-                    });
+                        })
+                        .catch(error => {
+                            console.error("Ошибка при получении данных:", error);
+                        });
+                }
             }
 
             function push() {
@@ -356,10 +403,110 @@
 
             });
             noCanvas(); // отключаем холст, если он не нужен
-            update()
+            function filterTextWithBanwords(inputText) {
+                if (banwords.size === 0) {
+                    console.warn('Список banwords ещё не загружен');
+                    return inputText;
+                }
+
+                // Разбиваем на слова, пробелы и знаки препинания
+                const tokens = inputText.match(/[\wа-яА-ЯёЁ]+|[^\w\s]|[\s]+/g);
+
+                const filtered = tokens.map(token => {
+                    const normalized = token.toLowerCase().replace(/[^а-яa-z0-9]/gi, '');
+                    return banwords.has(normalized) ? '(мат)' : token;
+                });
+
+                return filtered.join('');
+            }
+
+
+            function bantest() {
+                const rawText = "Ты чё, гандон, совсем?";
+                const cleanText = filterTextWithBanwords(rawText);
+                console.log(cleanText); // "Ты чё, (мат), совсем?"
+            }
+
+
+            // Загружаем banwords.txt при старте
+            fetch('/banword.txt')
+                .then(res => res.text())
+                .then(text => {
+                    text
+                        .split(/\r?\n/)
+                        .map(w => w.trim().toLowerCase())
+                        .forEach(w => {
+                            if (w.length > 0) banwords.add(w);
+                        });
+                    console.log(`Загружено ${banwords.size} запрещённых слов`);
+                    bantest()
+                    update()
+
+                });
+
+            function reloadOnline() {
+                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + getCookie("target") + "_last-online&text=" + Math.floor(Date.now() / 1000))
+                    .then(response => response.text())
+                    .then(data => {
+                        let dif1 = Math.floor(Date.now() / 1000) - data
+                        let dstate
+                        if (dif1 < 60) {
+                            dstate = "В сети";
+                        } else if (dif1 < 60 * 2) {
+                            dstate = "В сети минуту назад";
+                        } else if (dif1 < 60 * 60) {
+                            dstate = "В сети " + Math.floor(dif1 / 60) + " минут назад";
+                        } else if (dif1 < 60 * 60 * 24) {
+                            dstate = "В сети " + Math.floor(dif1 / 60 / 60) + " часов назад";
+                        } else {
+                            dstate = "В сети " + Math.floor(dif1 / 60 / 60 / 24) + " дней назад";
+                        }
+                        name.html(getCookie("name") + " (" + dstate + ")")
+                    })
+                    .catch(error => {
+                        name.html(getCookie("name"))
+                    });
+            }
+            let found = 0
             setInterval(() => {
+                fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_last-online&text=" + Math.floor(Date.now() / 1000))
+                    .then(response => response.text())
+                    .then(data => {
+
+                    })
+                    .catch(error => {
+
+                    });
+                reloadOnline()
                 console.log("Каждые 5 секунд: пип!");
                 update()
+                let num = history.length - 1
+                if (found == 0) {
+                    while (num > -1) {
+                        if (history[num].sender == pp) {
+                            num = -1000
+                            found = 1
+                        }
+                        num--
+                    }
+                    if (found == 0) {
+                        let placeholder = [{
+                            type: 'invis',
+                            value: "placeholder for notifications",
+                            sender: pp,
+                            time: Math.floor(Date.now() / 1000)
+                        }];
+                        let backpush = JSON.stringify(placeholder)
+                        fetch("https://sebain.pythonanywhere.com/backpush?filename=chat_" + getCookie("chatid") + "&text=" + backpush)
+                            .then(response => response.text())
+                            .then(data => {
+                                update()
+                            })
+                            .catch(error => {
+                                console.error("Ошибка при получении данных:", error);
+                            });
+                    }
+                }
             }, 5000)
             console.log(getCharWidth('Aкваматика 2'));
             console.log(getFirstNChars('Aкваматика 2', 4)) // 10 считать как за отступ
@@ -380,8 +527,8 @@
             exit.position(0, 0)
             let name = createP(getCookie("name"))
             name.style('background-color', getCookie("colour"));
-            name.position(85, -15)
-            name
+            name.position(55, -15)
+            reloadOnline()
             let ban = createButton("Удалить!")
             ban.mousePressed(() => {
                 let confirm = prompt(
@@ -431,8 +578,17 @@
                                 .then(data => {
                                     console.log("Загрузка" + data);
                                     render();
-                                    alert("Удалено!");
-                                    window.location.href = "homepage.html";
+                                    fetch("https://sebain.pythonanywhere.com/unreg?filename=chat_" + getCookie("chatid") + "&key=" + ps)
+                                        .then(response => response.text())
+                                        .then(data => {
+                                            render()
+                                            alert("Удалено!");
+                                            window.location.href = "homepage.html";
+                                        })
+                                        .catch(error => {
+                                            console.error("Ошибка при получении данных:", error);
+                                        });
+
                                 })
                                 .catch(error => {
                                     console.error("Ошибка при получении данных:", error);
@@ -459,9 +615,23 @@
             }
 
             function sent(message) {
-                console.log(getTextLength(message))
-                if (getTextLength(message) > 150) {
+                let cant = false
+                if (getCookie("nofilt") == 1) {
+                    console.log("Фильтр выключен")
+                } else {
+                    if (filterTextWithBanwords(message) == message) {
+                        console.log("Фильтр включен но матов нет")
+                    } else {
+                        cant = true
+                    }
+                }
+                //console.log(getTextLength(message))
+                if (getTextLength(message) > 350) {
                     alert("Длинное сообщение")
+                } else if (getTextLength(message) < 4) {
+                    alert("Короткое сообщение!")
+                } else if (cant) {
+                    alert("Нельзя матерится с фильтром матов!")
                 } else {
                     if (message != "") {
                         input.value("")
@@ -469,7 +639,8 @@
                             type: 'text',
                             value: message,
                             sender: pp,
-                            time: Math.floor(Date.now() / 1000)
+                            time: Math.floor(Date.now() / 1000),
+                            uid: getRandomFromRange(111111, 999999)
                         });
                         push()
                     }
@@ -485,33 +656,6 @@
             send.mousePressed(() => {
                 sent(input.value())
             });
-
-
-
-            //            overlay = createDiv('');
-            //            overlay.position(0, 0);
-            //            overlay.size(windowWidth, windowHeight);
-            //            overlay.style('background', 'rgba(0, 0, 0, 0.6)');
-            //            overlay.style('position', 'fixed');
-            //            overlay.style('z-index', '100');
-            //            overlay.style('pointer-events', 'none');
-            //
-            //            // Кнопки — отдельно, с более высоким z-index
-            //            btnEdit = createButton('Изменить');
-            //            btnEdit.position(100, 100);
-            //            btnEdit.style('position', 'fixed');
-            //            btnEdit.style('z-index', '101');
-            //
-            //            btnDelete = createButton('Удалить');
-            //            btnDelete.position(100, 150);
-            //            btnDelete.style('position', 'fixed');
-            //            btnDelete.style('z-index', '101');
-            //
-            //            btnCancel = createButton('Отмена');
-            //            btnCancel.position(100, 200);
-            //            btnCancel.style('position', 'fixed');
-            //            btnCancel.style('z-index', '101');
-
         }
     </script>
 </body>
