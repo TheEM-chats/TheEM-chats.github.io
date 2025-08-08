@@ -21,11 +21,13 @@
         let globalres = ""
         let history = []
         let objs = []
+        let adds = []
         let subut
         let container
         let btnCancel
         let btnDelete
         let btnEdit
+        let btnOpen
         let btnText
         let msgs = 1
         let timer1 = 1
@@ -76,10 +78,17 @@
             function OvlayHide() {
                 overlay.style('background', '#ffffff');
                 overlay.style('z-index', '-100');
-                btnCancel.remove()
+                btnOpen.remove()
                 btnDelete.remove()
-                btnEdit.remove()
                 btnText.remove()
+                try {
+                    btnEdit.remove()
+                    btnCancel.remove()
+                } catch {
+
+                }
+
+
             }
             overlay.style('background', '#ffffff');
             overlay.style('z-index', '-100');
@@ -132,6 +141,147 @@
                 console.log(msgs)
 
             }, 1000);
+            //Отправка вложений - картинка
+            function fileToBase64(file, callback) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    callback(reader.result);
+                };
+                reader.onerror = function() {
+                    console.error('Ошибка чтения файла');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function compressImage(file, maxSizeBytes, callback) {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+
+                    let quality = 0.95;
+
+                    function tryCompress() {
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        const byteLength = atob(dataUrl.split(',')[1]).length;
+
+                        if (byteLength <= maxSizeBytes || quality < 0.1) {
+                            fetch(dataUrl)
+                                .then(res => res.blob())
+                                .then(blob => {
+                                    const newFile = new File([blob], file.name, {
+                                        type: 'image/jpeg'
+                                    });
+                                    callback(newFile);
+                                });
+                        } else {
+                            quality -= 0.05;
+                            tryCompress();
+                        }
+                    }
+
+                    tryCompress();
+                };
+
+                img.onerror = function() {
+                    callback(null);
+                };
+
+                img.src = url;
+            }
+
+            function imgsent(file) {
+                const MAX_SIZE_MB = 30;
+                const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+                if (!file.type.startsWith('image/')) {
+                    console.error('Файл не является изображением');
+                    return;
+                }
+
+                compressImage(file, MAX_SIZE_BYTES, function(compressedFile) {
+                    if (!compressedFile) {
+                        console.error('Не удалось сжать изображение до 30 МБ');
+                        alert("Большой файл, не больше 30 мб!")
+                        return;
+                    }
+
+                    fileToBase64(compressedFile, function(base64) {
+                        const apiKey = 'c77c07592cd1f730aacfb02824de3a17'; // ← Вставь свой API ключ с imgbb
+                        const formData = new FormData();
+                        formData.append('image', base64.split(',')[1]);
+
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', 'https://api.imgbb.com/1/upload?key=' + apiKey, true);
+
+                        xhr.onload = function() {
+                            if (xhr.status === 200) {
+                                const result = JSON.parse(xhr.responseText);
+                                if (result.success) {
+                                    const url = result.data.url;
+                                    console.log('Ссылка на изображение:', url);
+                                    history.push({
+                                        type: 'img',
+                                        value: url,
+                                        sender: pp,
+                                        time: Math.floor(Date.now() / 1000),
+                                        uid: getRandomFromRange(111111, 999999)
+                                    });
+                                    push()
+                                } else {
+                                    console.error('Ошибка загрузки:', result);
+                                }
+                            } else {
+                                console.error('Ошибка запроса:', xhr.statusText);
+                            }
+                        };
+
+                        xhr.onerror = function() {
+                            console.error('Ошибка сети');
+                        };
+
+                        xhr.send(formData);
+                    });
+                });
+            }
+
+            //Отправка вложений - фунция
+            function vlog() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '*/*';
+
+                input.onchange = () => {
+                    const file = input.files[0];
+                    if (!file) return;
+
+                    const mimeType = file.type;
+                    let fileType;
+
+                    if (mimeType.startsWith('image/')) {
+                        fileType = 'img';
+                        imgsent(file)
+                    } else if (mimeType.startsWith('video/')) {
+                        fileType = 'vid';
+                        alert("Пока не доступно!")
+                    } else if (mimeType.startsWith('audio/')) {
+                        fileType = 'aud';
+                        alert("Пока не доступно!")
+                    } else {
+                        fileType = 'oth';
+                        alert("Пока не доступно!")
+                    }
+                    console.log(fileType)
+                };
+                input.click();
+            }
+
 
             function MenuShow(editnum) {
                 if (history[editnum].sender == pp) {
@@ -145,41 +295,80 @@
                             btnText.style('position', 'fixed');
                             btnText.style('z-index', '101');
                             btnText.style('border-radius', '8px');
+                            if (history[editnum].type == "text") {
+                                btnEdit = createButton('Изменить');
+                                btnEdit.mousePressed(() => {
+                                    editmenu = 1
+                                    let place = prompt("Новое сообщение:")
+                                    if (place !== "" && place !== null) {
+                                        history[editnum].prevvalue = history[editnum].value
+                                        history[editnum].value = place + " (изменено)"
+                                        history[editnum].time = Math.floor(Date.now() / 1000)
+                                        fetch("https://sebain.pythonanywhere.com/changer?filename=chat_" + getCookie("chatid") + "&text=" + JSON.stringify(history[editnum]) + "&uid=" + uid)
+                                            .then(response => response.text())
+                                            .then(data => {
+                                                SoundEffect("push.mp3")
+                                                editmenu = 0
+                                                render()
+                                                OvlayHide()
+                                            })
+                                            .catch(error => {
+                                                editmenu = 0
+                                                console.error("Ошибка при получении данных:", error);
+                                            });
+                                    } else {
+                                        editmenu = 0
+                                    }
 
+                                });
+                            } else {
+                                btnEdit = createButton('Открыть');
+                                btnEdit.mousePressed(() => {
+                                    setCookie2("safeurl", history[editnum].value)
+                                    window.location.href = "safeweb.html";
+                                });
+                            }
 
-                            btnEdit = createButton('Изменить');
                             btnEdit.position(0, 100);
                             btnEdit.size(windowWidth, 50)
                             btnEdit.style('position', 'fixed');
                             btnEdit.style('z-index', '101');
                             btnEdit.style('background-color', '#3366cc');
-                            btnEdit.mousePressed(() => {
-                                editmenu = 1
-                                let place = prompt("Новое сообщение:")
-                                if (place !== "" && place !== null) {
-                                    history[editnum].prevvalue = history[editnum].value
-                                    history[editnum].value = place + " (изменено)"
-                                    history[editnum].time = Math.floor(Date.now() / 1000)
-                                    fetch("https://sebain.pythonanywhere.com/changer?filename=chat_" + getCookie("chatid") + "&text=" + JSON.stringify(history[editnum]) + "&uid=" + uid)
-                                        .then(response => response.text())
-                                        .then(data => {
-                                            SoundEffect("push.mp3")
-                                            editmenu = 0
-                                            render()
-                                            OvlayHide()
-                                        })
-                                        .catch(error => {
-                                            editmenu = 0
-                                            console.error("Ошибка при получении данных:", error);
-                                        });
+
+                            btnOpen = createButton('Открыть (Ссылку)');
+                            btnOpen.mousePressed(() => {
+                                function getLink(text) {
+                                    // Сначала ищем ссылку с http/https
+                                    const httpRegex = /https?:\/\/[^\s]+/i;
+                                    const httpMatch = text.match(httpRegex);
+                                    if (httpMatch) return httpMatch[0];
+
+                                    // Если не найдено — ищем по доменам
+                                    const domainRegex = /\b(?:www\.)?[^\s]+\.(?:io|com|by|ru|site|org|net)\b[^\s]*/i;
+                                    const domainMatch = text.match(domainRegex);
+                                    if (domainMatch) return domainMatch[0];
+
+                                    // Если ничего не найдено
+                                    return "NO";
+                                }
+
+                                if (getLink(history[editnum].value) != "NO") {
+                                    setCookie2("safeurl", getLink(history[editnum].value))
+                                    window.location.href = "safeweb.html";
                                 } else {
-                                    editmenu = 0
+                                    alert("Ссылок нету!")
                                 }
 
                             });
+                            btnOpen.position(0, 150);
+                            btnOpen.size(windowWidth, 50)
+                            btnOpen.style('position', 'fixed');
+                            btnOpen.style('z-index', '101');
+                            btnOpen.style('background-color', '#3366cc');
+
 
                             btnDelete = createButton('Удалить');
-                            btnDelete.position(0, 150);
+                            btnDelete.position(0, 200);
                             btnDelete.size(windowWidth, 50)
                             btnDelete.style('position', 'fixed');
                             btnDelete.style('z-index', '101');
@@ -203,7 +392,7 @@
                             });
 
                             btnCancel = createButton('Отмена');
-                            btnCancel.position(0, 200);
+                            btnCancel.position(0, 250);
                             btnCancel.size(windowWidth, 50)
                             btnCancel.style('position', 'fixed');
                             btnCancel.style('z-index', '101');
@@ -222,8 +411,30 @@
                     console.log("Системное сообщение : меню не доступно")
                     OvlayHide()
                 } else {
-                    console.log("Чужое сообщение, пока не доступно")
-                    OvlayHide()
+                    setCookie2("safeurl", history[editnum].value)
+                    if (history[editnum].type == "text") {
+                        OvlayHide()
+                    } else {
+                        btnEdit = createButton('Открыть');
+                        btnEdit.mousePressed(() => {
+                            window.location.href = "safeweb.html";
+                        });
+
+                        btnEdit.position(0, 150);
+                        btnEdit.size(windowWidth, 50)
+                        btnEdit.style('position', 'fixed');
+                        btnEdit.style('z-index', '101');
+                        btnEdit.style('background-color', '#3366cc');
+                        btnCancel = createButton('Отмена');
+                        btnCancel.position(0, 200);
+                        btnCancel.size(windowWidth, 50)
+                        btnCancel.style('position', 'fixed');
+                        btnCancel.style('z-index', '101');
+                        btnCancel.style('background-color', '#b3b3b3');
+                        btnCancel.mousePressed(() => {
+                            OvlayHide()
+                        });
+                    }
                 }
             }
 
@@ -247,6 +458,15 @@
                 while (num > -1) {
                     try {
                         objs[num].remove()
+                    } catch {
+                        console.log("НЕ УДАЛЕНО!")
+                    }
+                    num--
+                }
+                num = objs.length - 1
+                while (num > -1) {
+                    try {
+                        adds[num].remove()
                     } catch {
                         console.log("НЕ УДАЛЕНО!")
                     }
@@ -292,6 +512,61 @@
                         objs[num].style('border-radius', '12px');
 
                         container.child(objs[num]);
+                        let mynum = num
+                        objs[num].mousePressed(() => {
+                            OvlayShow()
+                            MenuShow(mynum)
+                            console.log(mynum)
+                        });
+                    } else if (history[num].type == "img") {
+                        console.log("Отображаем картинку!")
+                        let colour
+                        if (history[num].sender == pp) {
+                            autor = "Вы:\n"
+                            colour = "#66ff66"
+                        } else if (history[num].sender == "system") {
+                            autor = "Система:\n"
+                            colour = "#669999"
+                        } else {
+                            autor = getCookie("name") + ":\n"
+                            colour = "#6699ff"
+                        }
+                        let unixTime = history[num].time // Пример Unix-времени
+                        let date = new Date(unixTime * 1000); // Преобразуем в миллисекунды
+
+                        // Форматируем вручную
+                        let options = {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            timeZone: 'Europe/Minsk',
+                        };
+
+                        let time = date.toLocaleString('ru-RU', options);
+                        console.log(time); // "11:00 30 июля 2025 г."
+                        let file = history[num].value
+                        objs[num] = createButton("")
+                        objs[num].style('white-space', 'pre-wrap');
+                        objs[num].style('text-align', 'left');
+                        objs[num].style('background-color', colour); // фон кнопки
+                        objs[num].style('border-radius', '12px');
+                        objs[num].style('background-image', `url("${file}")`);
+                        objs[num].style('align-self', 'flex-start');
+                        objs[num].style('flex', 'none');
+                        objs[num].style('background-repeat', 'no-repeat');
+                        objs[num].style('background-size', 'calc(100% - 10px)'); // ⬅️ уменьшить высоту
+                        objs[num].style('background-position', 'center 20px'); // ⬅️ отступ сверху
+                        container.child(objs[num]);
+                        objs[num].size(256, 256)
+                        let p = createP(time + "\n" + autor);
+                        let pos = objs[num].position();
+                        p.position(pos.x + 10, pos.y - 10);
+                        container.child(p);
+                        adds[num] = p
+
+
                         let mynum = num
                         objs[num].mousePressed(() => {
                             OvlayShow()
@@ -384,6 +659,8 @@
 
 
             window.addEventListener("resize", () => {
+                name.size(window.innerWidth - 135, 40)
+                fileS.position(window.innerWidth - 90, window.innerHeight - 56)
                 ban.position(window.innerWidth - 80, 0)
                 send.position(window.innerWidth - 90, window.innerHeight - 30)
                 input.position(0, window.innerHeight - 30)
@@ -392,6 +669,7 @@
                 container.position(0, 25)
                 overlay.size(windowWidth, windowHeight);
                 try {
+                    btnOpen.size(windowWidth, 50)
                     btnText.position(windowWidth / 10, 50);
                     btnText.size(windowWidth - windowWidth / 10 - windowWidth / 10, 25)
                     btnEdit.size(windowWidth, 50)
@@ -478,7 +756,7 @@
 
                     });
                 reloadOnline()
-                console.log("Каждые 5 секунд: пип!");
+                console.log("Каждые 7 секунд: пип!");
                 update()
                 let num = history.length - 1
                 if (found == 0) {
@@ -507,7 +785,7 @@
                             });
                     }
                 }
-            }, 5000)
+            }, 7000)
             console.log(getCharWidth('Aкваматика 2'));
             console.log(getFirstNChars('Aкваматика 2', 4)) // 10 считать как за отступ
             container = createDiv();
@@ -525,9 +803,11 @@
 
             });
             exit.position(0, 0)
+            exit.size(60, 40)
             let name = createP(getCookie("name"))
             name.style('background-color', getCookie("colour"));
             name.position(55, -15)
+            name.size(window.innerWidth - 135, 40)
             reloadOnline()
             let ban = createButton("Удалить!")
             ban.mousePressed(() => {
@@ -601,14 +881,21 @@
                 }
             })
             ban.position(window.innerWidth - 80, 0)
+            ban.size(77, 40)
             let input = createInput()
             input.attribute('placeholder', 'Введите текст...');
             input.style('font-size', '12px');
             input.position(0, window.innerHeight - 30)
             input.size(window.innerWidth - 100, 20)
-            let send = createButton("Слать")
+            let send = createButton("Отправить")
             send.position(window.innerWidth - 90, window.innerHeight - 30)
             send.size(75, 25)
+            let fileS = createButton("Вложить")
+            fileS.position(window.innerWidth - 90, window.innerHeight - 56)
+            fileS.size(75, 25)
+            fileS.mousePressed(() => {
+                vlog()
+            });
 
             function getTextLength(text) {
                 return text.length;

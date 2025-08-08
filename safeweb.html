@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - безопасный интернет</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="p5.js"></script>
+    <script src="cookie.js"></script>
+</head>
+
+<body>
+    <script>
+        let frame;
+
+        function setup() {
+            noCanvas(); // отключаем холст, если он не нужен
+            window.addEventListener("resize", () => {
+                frame.size(window.innerWidth - 10, window.innerHeight - 30)
+            });
+
+            function normalizeUrl(url) {
+                if (!/^https?:\/\//i.test(url)) {
+                    url = 'https://' + url;
+                }
+                return url;
+            }
+
+            function gourl(url) {
+                input.value(url)
+                url = normalizeUrl(url)
+                try {
+                    frame.remove()
+                } catch {
+                    console.log("Не найдено!")
+                }
+                frame = createElement('iframe');
+                frame.attribute('src', url);
+                frame.attribute('sandbox', 'allow-scripts allow-downloads');
+                frame.position(0, 20)
+                frame.size(window.innerWidth - 10, window.innerHeight - 30)
+
+
+            }
+            let input = createInput()
+            input.attribute('placeholder', 'Введите url');
+            input.style('font-size', '12px');
+            input.elt.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    console.log('Enter нажат: ' + input.value());
+                    gourl(input.value())
+
+                }
+            });
+            input.position(90, 0)
+            input.size(window.innerWidth - 170, 15)
+            let send = createButton("Перейти")
+            send.mousePressed(() => {
+                gourl(input.value())
+            });
+            send.position(window.innerWidth - 80, 0)
+            gourl(getCookie("safeurl"))
+            let ext = createButton("Назад")
+            ext.size(90, 20)
+            ext.position(0, 0)
+            ext.mousePressed(() => {
+                window.location.href = "chat.html"
+            });
+            let opn = createButton("Открыть так")
+            opn.position(0, 20)
+            opn.mousePressed(() => {
+                window.location.href = input.value()
+            });
+        }
+    </script>
+</body>
+
+</html>
