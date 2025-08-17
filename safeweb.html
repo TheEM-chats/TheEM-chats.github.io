@@ -1,14 +1,22 @@
 <!DOCTYPE html>
 <html lang="ru">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    html,
+    body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+</style>
 
 <head>
     <meta charset="UTF-8" />
     <title>TheEM - безопасный интернет</title>
     <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
 
-    <script src="p5.js"></script>
-    <script src="cookie.js"></script>
+    <script src="libs/p5.js"></script>
+    <script src="libs/xlibs.js"></script>
 </head>
 
 <body>
@@ -18,7 +26,7 @@
         function setup() {
             noCanvas(); // отключаем холст, если он не нужен
             window.addEventListener("resize", () => {
-                frame.size(window.innerWidth - 10, window.innerHeight - 30)
+                frame.size(window.innerWidth, window.innerHeight)
             });
 
             function normalizeUrl(url) {
@@ -38,9 +46,9 @@
                 }
                 frame = createElement('iframe');
                 frame.attribute('src', url);
-                frame.attribute('sandbox', 'allow-scripts allow-downloads');
-                frame.position(0, 20)
-                frame.size(window.innerWidth - 10, window.innerHeight - 30)
+                frame.attribute('sandbox', 'allow-scripts');
+                frame.position(1, 55)
+                frame.size(window.innerWidth, window.innerHeight)
 
 
             }
@@ -73,6 +81,8 @@
             opn.mousePressed(() => {
                 window.location.href = input.value()
             });
+            let tip = createP("Если не загружается, нажмите `Открыть так`, но лучше этого не делать")
+            tip.position(90, 5)
         }
     </script>
 </body>

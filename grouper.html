@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - безопасный интернет</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="libs/p5.js"></script>
+    <script src="libs/xlibs.js"></script>
+    <script src="chat/usrader.js"></script>
+</head>
+
+<body>
+    <script>
+        let group, channel
+
+        function gotohome() {
+            window.location.href = "homepage.html";
+            alert("Создано! Успешно!")
+        }
+
+        function setup() {
+            noCanvas(); // отключаем холст, если он не нужен
+            window.addEventListener("resize", () => {
+                frame.size(window.innerWidth, window.innerHeight)
+            });
+            let ps = getCookie("ps")
+            let pp = getCookie("pp")
+
+
+            group = createCheckbox('Группа', true);
+            group.changed(handleChange);
+
+            channel = createCheckbox('Канал', false);
+            channel.changed(handleChange);
+            channel.position(100, 9)
+
+            let name = createInput("Новая группа/канал " + getRandomFromRange(1000, 9000))
+            name.size(window.innerWidth - 25, 25)
+
+            back = createButton("К списку чатов")
+            back.size(200, 25)
+            back.mousePressed(() => {
+                window.location.href = "homepage.html";
+            });
+
+            submit = createButton("Создать")
+            submit.size(200, 25)
+            submit.mousePressed(() => {
+                submit.remove()
+                create(channel.checked(), name.value())
+            });
+
+
+            function create(isChannel, name) {
+                let level = 1
+                let target = "group"
+                if (isChannel) {
+                    level = 2
+                    target = "channel"
+                }
+                let id = getRandomFromRange(11111, 99999)
+                fetch("https://sebain.pythonanywhere.com/createpass?filename=" + id + "_profn&pass=" + ps + "&level=" + 2)
+                    .then(response => response.text())
+                    .then(data => {
+                        fetch("https://sebain.pythonanywhere.com/set?filename=" + id + "_profn&pass=" + ps + "&text=" + name)
+                            .then(response => response.text())
+                            .then(data => {
+                                fetch("https://sebain.pythonanywhere.com/createpass?filename=" + id + "_img&pass=" + ps + "&level=" + 2)
+                                    .then(response => response.text())
+                                    .then(data => {
+                                        fetch("https://sebain.pythonanywhere.com/set?filename=" + id + "_img&pass=" + ps + "&text=" + "https://i.ibb.co/JjdLNsVf/290890a016e2.jpg")
+                                            .then(response => response.text())
+                                            .then(data => {
+                                                fetch("https://sebain.pythonanywhere.com/createpass?filename=chat_" + id + "&pass=" + ps + "&level=" + level)
+                                                    .then(response => response.text())
+                                                    .then(data => {
+                                                        let placeholder = [{
+                                                            type: 'text',
+                                                            value: "А вы знали что?: если нажать в списке чатов на колокол , затем нажать разрешить и ещё раз разрешить то вы будете получать уведомления в ваших чатах!",
+                                                            sender: "system",
+                                                            time: Math.floor(Date.now() / 1000)
+                                                        }];
+                                                        fetch("https://sebain.pythonanywhere.com/set?filename=chat_" + id + "&pass=" + ps + "&text=" + Crypt(JSON.stringify(placeholder)))
+                                                            .then(response => response.text())
+                                                            .then(data => {
+                                                                fetch("https://sebain.pythonanywhere.com/createpass?filename=" + id + "_owner&pass=" + ps + "&level=" + 2)
+                                                                    .then(response => response.text())
+                                                                    .then(data => {
+                                                                        fetch("https://sebain.pythonanywhere.com/set?filename=" + id + "_owner&pass=" + ps + "&text=" + JSON.stringify([getCookie("pp")]))
+                                                                            .then(response => response.text())
+                                                                            .then(data => {
+                                                                                fetch("https://sebain.pythonanywhere.com/createpass?filename=" + id + "_ignore&pass=" + ps + "&level=" + 2)
+                                                                                    .then(response => response.text())
+                                                                                    .then(data => {
+                                                                                        addbyid(pp, id, target, gotohome)
+                                                                                    })
+                                                                                    .catch(error => {
+                                                                                        console.error("Ошибка при получении данных:", error);
+                                                                                    });
+                                                                            })
+                                                                            .catch(error => {
+                                                                                console.error("Ошибка при получении данных:", error);
+                                                                            });
+                                                                    })
+                                                                    .catch(error => {
+                                                                        console.error("Ошибка при получении данных:", error);
+                                                                    });
+                                                            })
+                                                            .catch(error => {
+                                                                console.error("Ошибка при получении данных:", error);
+                                                            });
+                                                    })
+                                                    .catch(error => {
+                                                        console.error("Ошибка при получении данных:", error);
+                                                    });
+                                            })
+                                            .catch(error => {
+                                                console.error("Ошибка при получении данных:", error);
+                                            });
+                                    })
+                                    .catch(error => {
+                                        console.error("Ошибка при получении данных:", error);
+                                    });
+                            })
+                            .catch(error => {
+                                console.error("Ошибка при получении данных:", error);
+                            });
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                    });
+            }
+
+        }
+
+        function handleChange() {
+            if (this === group && group.checked()) {
+                channel.checked(false);
+            } else if (this === channel && channel.checked()) {
+                group.checked(false);
+            }
+        }
+    </script>
+</body>
+
+</html>

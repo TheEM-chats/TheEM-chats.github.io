@@ -7,8 +7,8 @@
     <title>TheEM - настройки</title>
     <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
 
-    <script src="p5.js"></script>
-    <script src="cookie.js"></script>
+    <script src="libs/p5.js"></script>
+    <script src="libs/xlibs.js"></script>
 </head>
 
 <body>
@@ -19,31 +19,6 @@
         let ps = getCookie("ps")
         let globalres = ""
 
-        function Crypt(text) {
-            return encodeURIComponent(text);
-        }
-
-        function Decrypt(text) {
-            try {
-                return decodeURIComponent(text);
-            } catch (e) {
-                return text;
-            }
-        }
-
-        function setCookie2(name, value, options) {
-            setCookie(name, value, {
-                expires: new Date('2035-12-31T23:59:59Z'),
-                path: '/',
-                secure: true,
-                samesite: 'strict',
-                ...options // если есть свои параметры — они переопределят дефолтные
-            });
-        }
-
-        function getRandomFromRange(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
 
         function setup() {
 
@@ -194,27 +169,6 @@
                 }
             });
             //Ник
-            function getRandomBrightColor() {
-                const brightColors = [
-                    'FF5733', 'FF8C00', 'FFD700', 'ADFF2F', '00FF7F', '00FFFF', '1E90FF', '4169E1',
-                    '9932CC', 'FF69B4', 'FF1493', 'FF4500', '32CD32', '00CED1', 'DC143C', '8A2BE2',
-                    'FF6347', 'FFA07A', 'FF7F50', 'FFB6C1', 'FA8072', 'F08080', 'F0E68C', 'EEE8AA',
-                    'DAA520', 'B8860B', 'D2691E', 'CD5C5C', '8B0000', 'A52A2A', 'B22222', 'BC8F8F',
-                    'FF00FF', '8B008B', '9400D3', 'BA55D3', '9370DB', '7B68EE', '6A5ACD', '483D8B',
-                    '6495ED', '40E0D0', '48D1CC', '00BFFF', '87CEFA', '87CEEB', '4682B4', '5F9EA0',
-                    '00FA9A', '00FF00', '7FFF00', '7CFC00', '32CD32', '98FB98', '90EE90', '8FBC8F',
-                    '3CB371', '2E8B57', '228B22', '006400', '66CDAA', '20B2AA', '008B8B', '008080',
-                    'B0E0E6', 'AFEEEE', 'ADD8E6', 'B0C4DE', '778899', '708090', 'BEBEBE', 'D3D3D3',
-                    'C0C0C0', 'A9A9A9', '808080', '696969', '2F4F4F', '000000', 'FFFFFF', 'F5F5F5',
-                    'FFE4B5', 'FFEBCD', 'FFF0F5', 'FFFACD', 'FAFAD2', 'FFEFD5', 'FFDAB9', 'E6E6FA',
-                    'D8BFD8', 'DDA0DD', 'EE82EE', 'DA70D6', 'FF00FF', 'C71585', 'DB7093', 'FF1493',
-                    'FF69B4', 'FFC0CB', 'FFA07A', 'FF7F50', 'FF6347', 'FF4500', 'FF8C00', 'FFA500',
-                    'FFD700', 'FFFF00', 'FFFFE0', 'F0E68C', 'EEDD82', 'DAA520', 'BDB76B', 'B8860B'
-                ];
-                const randomIndex = Math.floor(Math.random() * brightColors.length);
-                console.log(randomIndex)
-                return brightColors[randomIndex];
-            }
             let mynik
             console.log(getRandomBrightColor())
             let colour = createButton("Сменить случайный цвет ника");

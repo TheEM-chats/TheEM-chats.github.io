@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    html,
+    body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - звонок</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="libs/p5.js"></script>
+    <script src="libs/xlibs.js"></script>
+    <script src="call/gui.js"></script>
+</head>
+
+<body>
+    <script>
+        let mic = false
+        let spk = true
+        callers = []
+        ocallers = []
+        olds = new Map();
+        objs = []
+        callid = getCookie("callid")
+        let ss = getCookie("ss")
+        let pp = getCookie("pp");
+        let ps = getCookie("ps")
+        let b_mic_tips
+        let b_spk_tips
+        let b_end_tips
+        let b_mic
+        let b_spk
+        let b_end
+        let plsenmic
+        let anim = false
+        const globalAudioContext = new(window.AudioContext || window.webkitAudioContext)();
+        if (getCookie("callid") == getCookie("travatrax418")) {
+            window.location.href = "homepage.html"
+        }
+
+        function setup() {
+            //sound.js
+            function PlayRecord(record, speed = 0.92, volume = 4) {
+                console.log(volume)
+                console.log("🎵 Воспроизвожу звук...");
+
+                try {
+                    const audioData = Uint8Array.from(atob(record), c => c.charCodeAt(0));
+                    globalAudioContext.decodeAudioData(audioData.buffer, buffer => {
+                        const source = globalAudioContext.createBufferSource();
+                        const gainNode = globalAudioContext.createGain();
+                        const highpassFilter = globalAudioContext.createBiquadFilter();
+                        const compressor = globalAudioContext.createDynamicsCompressor();
+
+                        // Настройки источника
+                        source.buffer = buffer;
+                        source.playbackRate.value = speed;
+
+                        // Настройки громкости
+                        gainNode.gain.value = Math.min(volume, 1.5); // можно чуть усилить
+
+                        // Фильтр: убираем низкие частоты ниже 200 Гц
+                        highpassFilter.type = "highpass";
+                        highpassFilter.frequency.value = 200;
+
+                        // Компрессор: делает речь более ровной
+                        compressor.threshold.value = -50;
+                        compressor.knee.value = 40;
+                        compressor.ratio.value = 12;
+                        compressor.attack.value = 0;
+                        compressor.release.value = 0.25;
+
+                        // Цепочка подключения
+                        source
+                            .connect(highpassFilter)
+                            .connect(compressor)
+                            .connect(gainNode)
+                            .connect(globalAudioContext.destination);
+
+                        source.start();
+
+                        source.onended = () => {
+                            console.log("✅ Звук завершён");
+                        };
+                    }, error => {
+                        console.error("❌ Ошибка декодирования аудио:", error);
+                    });
+                } catch (e) {
+                    console.error("❌ Ошибка при обработке base64:", e);
+                }
+            }
+
+            async function Record(millis) {
+                console.log("🎙️ Записываю...");
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+                const recordedChunks = [];
+
+                const mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'audio/webm; codecs=opus',
+                    audioBitsPerSecond: 96000 // можно снизить для компактности
+                });
+
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) recordedChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const t0 = performance.now();
+
+                    const blob = new Blob(recordedChunks, {
+                        type: 'audio/webm'
+                    });
+                    const reader = new FileReader();
+
+                    reader.onloadend = () => {
+                        const base64Audio = reader.result.split(',')[1];
+                        const t1 = performance.now();
+                        console.log(`📦 Обработка записи заняла ${Math.round(t1 - t0)} мс`);
+                        After(base64Audio);
+
+                    };
+
+                    reader.readAsDataURL(blob);
+                };
+
+                mediaRecorder.start();
+
+                // Запускаем следующую запись за 100 мс до окончания текущей
+                setTimeout(() => {
+                    Record(millis); // рекурсивный вызов
+                }, millis - 1);
+
+                // Останавливаем текущую запись
+                setTimeout(() => {
+                    mediaRecorder.stop();
+                }, millis);
+            }
+
+            async function requestMicrophone() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: true
+                    });
+                    console.log("Доступ к микрофону получен");
+                    // можно использовать stream для записи
+                } catch (err) {
+                    console.error("Ошибка доступа к микрофону:", err);
+                    alert("Нужен доступ к микрофону для работы");
+                }
+            }
+            //Подключение к вызову
+            function inviteme(arr) {
+                arr = arr.filter(item => item !== pp)
+                arr.push(pp)
+                fetch('https://sebain.pythonanywhere.com/call_set_post', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            filename: callid,
+                            text: JSON.stringify(arr)
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Ошибка: ${response.status}`);
+                        }
+                        return response.text(); // или .json(), если сервер возвращает JSON
+                    })
+                    .then(data => {
+                        console.log('Ответ от сервера:', data);
+                        console.log("Подключено!")
+                    })
+                    .catch(error => {
+                        console.error('Ошибка запроса:', error);
+                    });
+            }
+            fetch('https://sebain.pythonanywhere.com/call_get_post', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: callid
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Ошибка: ${response.status}`);
+                    }
+                    return response.text(); // или .json(), если сервер возвращает JSON
+                })
+                .then(data => {
+                    console.log('Ответ от сервера:', data);
+                    if (data == "Файл не найден в calls") {
+                        data = []
+                        callers = data
+                        inviteme(data)
+                    } else {
+                        data = JSON.parse(data)
+                        callers = data
+                        inviteme(data)
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка запроса:', error);
+                });
+            //Клиентсая часть
+            noCanvas()
+            window.addEventListener("resize", () => {
+                updategui()
+            });
+
+            b_mic = createButton("")
+            b_spk = createButton("")
+            b_end = createButton("")
+
+            b_end.mousePressed(() => {
+                callers = callers.filter(item => item !== pp)
+                fetch('https://sebain.pythonanywhere.com/call_set_post', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            filename: callid,
+                            text: JSON.stringify(callers)
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Ошибка: ${response.status}`);
+                        }
+                        return response.text(); // или .json(), если сервер возвращает JSON
+                    })
+                    .then(data => {
+                        console.log('Ответ от сервера:', data);
+                        window.location.href = "chat.html"
+                    })
+                    .catch(error => {
+                        console.error('Ошибка запроса:', error);
+                    });
+            });
+
+            b_mic_tips = createButton("Микро (выкл)")
+            b_spk_tips = createButton("Динам (вкл)")
+            b_end_tips = createButton("Заверш")
+            crtgui()
+            updategui()
+            requestMicrophone()
+            setInterval(() => {
+                console.log("Обновление");
+                if (mic) {
+                    b_mic.style('background-image', 'url("/call/mic_en.png")')
+                    b_mic_tips.html("Микро (вкл)");
+                } else {
+                    b_mic.style('background-image', 'url("/call/mic_di.png")')
+                    b_mic_tips.html("Микро (выкл)");
+                }
+                if (spk) {
+                    b_spk.style('background-image', 'url("/call/sound_en.png")')
+                    b_spk_tips.html("Динам (вкл)");
+                } else {
+                    b_spk.style('background-image', 'url("/call/sound_di.png")')
+                    b_spk_tips.html("Динам (выкл)");
+                }
+                if (!mic) {
+                    if (anim) {
+                        anim = !anim
+                        plsenmic.style('color', '#f00');
+                    } else {
+                        anim = !anim
+                        plsenmic.style('color', '#000');
+                    }
+                } else {
+                    plsenmic.style('color', '#000');
+                }
+                try {
+                    fetch('https://sebain.pythonanywhere.com/call_get_post', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                filename: callid
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Ошибка: ${response.status}`);
+                            }
+                            return response.text(); // или .json(), если сервер возвращает JSON
+                        })
+                        .then(data => {
+                            console.log('Ответ от сервера:', data);
+                            if (data == "Файл не найден в calls") {} else {
+                                data = JSON.parse(data)
+                                callers = data
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Ошибка запроса:', error);
+                        });
+                } catch {
+                    console.log("НЕ ЗАГРУЖЕН СПИСОК")
+                }
+                //Отображение учасников
+                if (callers.length != ocallers.length) {
+                    mn = objs.length - 1
+                    while (mn > -1) {
+                        objs[mn].remove()
+                        mn--
+                    }
+                    console.log("Обновление!!++");
+                    console.log(callers)
+                    let y = 50;
+                    ocallers = callers;
+                    num = callers.length - 1
+                    console.log("num:", num);
+                    console.log("Всё гуд")
+                    while (num > -1) {
+
+                        print('Элемент ' + num + ': ' + callers[num]);
+
+                        let xy = y; // сохраняем позицию ДО fetch
+                        let xnum = num
+                        let caller = callers[xnum]
+
+                        if (callers[xnum] != pp) {
+                            fetch("https://sebain.pythonanywhere.com/saveget?filename=" + caller + "_profn")
+                                .then(response => response.text())
+                                .then(data => {
+                                    let btn = createButton(data);
+                                    btn.style('background-color', '#000');
+                                    btn.style('color', '#fff');
+                                    btn.style("border-width", "0px");
+                                    btn.position(0, xy);
+                                    btn.size(100, 25);
+                                    objs.push(btn)
+                                        //if (olds.get(caller + "_xchk") != "yes") {
+                                    olds.set(caller + "_xchk", "yes")
+                                    let slider = createSlider(0, 10, 5, 1);
+                                    slider.size(90, 25)
+                                    slider.position(100, xy)
+                                    objs.push(slider)
+                                    olds.set(caller + "_vol", slider)
+                                    console.log(caller + "_vol")
+                                        //}
+                                })
+                                .catch(error => {
+                                    console.error("Ошибка при получении данных:", error);
+                                });
+
+                            y += 25; // увеличиваем после fetch
+                        }
+
+                        num--
+                    }
+
+                }
+
+
+            }, 800);
+
+            //Обработчик звука
+
+            Record(500)
+
+            function After(record) {
+                //Запись
+                //Record(600)
+                if (mic) {
+                    fetch('https://sebain.pythonanywhere.com/call_set_post', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                filename: callid + "_" + pp,
+                                text: record
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Ошибка: ${response.status}`);
+                            }
+                            return response.text(); // или .json(), если сервер возвращает JSON
+                        })
+                        .then(data => {
+                            console.log('Ответ от сервера:', data);
+                        })
+                        .catch(error => {
+                            console.error('Ошибка запроса:', error);
+                        });
+                }
+                console.log("Цикл: пип!");
+                //Воспроизведение
+                console.log(callers)
+                console.log(1)
+                let num = callers.length - 1;
+
+                while (num > -1) {
+                    let currentCaller = callers[num];
+
+                    if (typeof currentCaller !== 'undefined' && currentCaller !== pp && spk) {
+                        fetch('https://sebain.pythonanywhere.com/call_get_post', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    filename: callid + "_" + currentCaller
+                                })
+                            })
+                            .then(response => response.text())
+                            .then(data => {
+                                let slider = olds.get(currentCaller + "_vol");
+                                if (slider && olds.get(currentCaller) !== data) {
+                                    PlayRecord(data, 0.92, slider.value() / 10);
+                                    olds.set(currentCaller, data);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Ошибка запроса:', error);
+                            });
+                    }
+
+                    num--;
+                }
+
+            }
+
+
+
+
+
+        }
+    </script>
+</body>
+
+</html>

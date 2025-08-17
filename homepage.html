@@ -8,14 +8,16 @@
     <title>TheEM - Список чатов</title>
     <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
 
-    <script src="p5.js"></script>
-    <script src="cookie.js"></script>
+    <script src="libs/p5.js"></script>
+    <script src="libs/xlibs.js"></script>
+    <script src="homepage/addbyid.js"></script>
+    <script src="homepage/load_chats.js"></script>
+    <script src="homepage/addfromserver.js"></script>
 </head>
 
 <body>
     <script>
         let canreload = true
-        let banwords = new Set();
         let myButton;
         let ss = getCookie("ss")
         let pp = getCookie("pp");
@@ -25,34 +27,6 @@
         let chatimgs = []
 
         function setup() {
-            function filterTextWithBanwords(inputText) {
-                if (banwords.size === 0) {
-                    console.warn('Список banwords ещё не загружен');
-                    return inputText;
-                }
-
-                // Разбиваем на слова, пробелы и знаки препинания
-                const tokens = inputText.match(/[\wа-яА-ЯёЁ]+|[^\w\s]|[\s]+/g);
-
-                const filtered = tokens.map(token => {
-                    const normalized = token.toLowerCase().replace(/[^а-яa-z0-9]/gi, '');
-                    return banwords.has(normalized) ? '(мат)' : token;
-                });
-
-                return filtered.join('');
-            }
-            // Загружаем banwords.txt при старте
-            fetch('/banword.txt')
-                .then(res => res.text())
-                .then(text => {
-                    text
-                        .split(/\r?\n/)
-                        .map(w => w.trim().toLowerCase())
-                        .forEach(w => {
-                            if (w.length > 0) banwords.add(w);
-                        });
-                    console.log(`Загружено ${banwords.size} запрещённых слов`);
-                });
             overlay = createButton("")
             overlay.position(0, 0);
             overlay.size(windowWidth, windowHeight);
@@ -66,162 +40,18 @@
             overlay.style('background', '#ffffff');
             overlay.style('z-index', '-100');
 
-            function getProfUrl(pubk, element) {
-                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pubk + "_img")
-                    .then(response => response.text())
-                    .then(data => {
-                        data = Decrypt(data)
-                        console.log(data)
-                        if (data == "Файл не найден в save") {
-                            element.style('background-image', 'url("https://i.ibb.co/F4qyF7RN/blank.png")')
-                        } else {
-                            element.style('background-image', `url("${data}")`);
 
-                        }
-                    })
-                    .catch(error => {
-                        element.style('background-image', 'url("https://i.ibb.co/F4qyF7RN/blank.png")')
-                    });
-            }
             //            let picker
             //            picker = createColorPicker('#ff0000'); // начальный цвет — красный
             //            picker.position(10, 220);
             setCookie2("chatid", "undefined")
             setCookie2("name", "undefined")
-            if (getCookie("captcha") == "yes") {
-                alert("Пройдите капчу")
-                window.location.href = "captcha.html"
-            }
             if (getCookie("IsReg") != "1") {
                 window.location.href = "index.html";
             }
 
-            function Crypt(text) {
-                return encodeURIComponent(text);
-            }
-
-            function Decrypt(text) {
-                try {
-                    return decodeURIComponent(text);
-                } catch (e) {
-                    return text;
-                }
-            }
-
-            function setCookie2(name, value, options) {
-                setCookie(name, value, {
-                    expires: new Date('2035-12-31T23:59:59Z'),
-                    path: '/',
-                    secure: true,
-                    samesite: 'strict',
-                    ...options // если есть свои параметры — они переопределят дефолтные
-                });
-            }
-
-
-            function addchat(newchats) {
-                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_chats")
-                    .then(response => response.text())
-                    .then(data => {
-                        globalres = data
-                        console.log(globalres)
-                        let chats = JSON.parse(globalres)
-                        let num = newchats.length - 1
-                        while (num > -1) {
-                            chats.push({
-                                target: newchats[num].target,
-                                chatid: newchats[num].chatid
-                            });
-                            num--
-                        }
-                        let exportJson = JSON.stringify(chats)
-                        console.log(exportJson)
-                        fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_chats" + "&text=" + exportJson)
-                            .then(response => response.text())
-                            .then(data => {
-                                globalres = data; // вызываем только после получения данных
-                                console.log(globalres); // выводим уже присвоенное значение
-                                window.location.href = "homepage.html";
-                            })
-                            .catch(error => {
-                                console.error("Ошибка при получении данных:", error);
-                            });
-                    })
-                    .catch(error => {
-                        console.error("Ошибка при получении данных:", error);
-                        let chats = []
-                        let num = newchats.length - 1
-                        while (num > -1) {
-                            chats.push({
-                                target: newchats[num].target,
-                                chatid: newchats[num].chatid
-                            });
-                            num--
-                        }
-                        let exportJson = JSON.stringify(chats)
-                        fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_chats" + "&text=" + exportJson)
-                            .then(response => response.text())
-                            .then(data => {
-                                globalres = data; // вызываем только после получения данных
-                                console.log(globalres); // выводим уже присвоенное значение
-                                window.location.href = "homepage.html";
-                            })
-                            .catch(error => {
-                                console.error("Ошибка при получении данных:", error);
-                            });
-                    });
-            }
-            // Загружаем новые чаты
-            fetch("https://sebain.pythonanywhere.com/get?filename=newchats_" + pp)
-                .then(response => response.text())
-                .then(data => {
-                    globalres = data; // вызываем только после получения данных
-                    console.log(globalres); // выводим уже присвоенное значение
-                    try {
-                        let newchats = JSON.parse(globalres)
-                        addchat(newchats)
-                        fetch("https://sebain.pythonanywhere.com/set?filename=newchats_" + pp + "&text=voidblank1")
-                            .then(response => response.text())
-                            .then(data => {
-                                globalres = data; // вызываем только после получения данных
-                                console.log(globalres); // выводим уже присвоенное значение
-                            })
-                            .catch(error => {
-                                console.error("Ошибка при получении данных:", error);
-                            });
-                    } catch {
-                        console.log("Если это не джсон то там ничё нет")
-                    }
-                })
-                .catch(error => {
-                    console.error("Собственно если файла с чатами нет то зачем нам чтото делать ", error);
-                });
-            //Инитиализация
-            function getRandomBrightColor() {
-                const brightColors = [
-                    'FF5733', 'FF8C00', 'FFD700', 'ADFF2F', '00FF7F', '00FFFF', '1E90FF', '4169E1',
-                    '9932CC', 'FF69B4', 'FF1493', 'FF4500', '32CD32', '00CED1', 'DC143C', '8A2BE2',
-                    'FF6347', 'FFA07A', 'FF7F50', 'FFB6C1', 'FA8072', 'F08080', 'F0E68C', 'EEE8AA',
-                    'DAA520', 'B8860B', 'D2691E', 'CD5C5C', '8B0000', 'A52A2A', 'B22222', 'BC8F8F',
-                    'FF00FF', '8B008B', '9400D3', 'BA55D3', '9370DB', '7B68EE', '6A5ACD', '483D8B',
-                    '6495ED', '40E0D0', '48D1CC', '00BFFF', '87CEFA', '87CEEB', '4682B4', '5F9EA0',
-                    '00FA9A', '00FF00', '7FFF00', '7CFC00', '32CD32', '98FB98', '90EE90', '8FBC8F',
-                    '3CB371', '2E8B57', '228B22', '006400', '66CDAA', '20B2AA', '008B8B', '008080',
-                    'B0E0E6', 'AFEEEE', 'ADD8E6', 'B0C4DE', '778899', '708090', 'BEBEBE', 'D3D3D3',
-                    'C0C0C0', 'A9A9A9', '808080', '696969', '2F4F4F', '000000', 'FFFFFF', 'F5F5F5',
-                    'FFE4B5', 'FFEBCD', 'FFF0F5', 'FFFACD', 'FAFAD2', 'FFEFD5', 'FFDAB9', 'E6E6FA',
-                    'D8BFD8', 'DDA0DD', 'EE82EE', 'DA70D6', 'FF00FF', 'C71585', 'DB7093', 'FF1493',
-                    'FF69B4', 'FFC0CB', 'FFA07A', 'FF7F50', 'FF6347', 'FF4500', 'FF8C00', 'FFA500',
-                    'FFD700', 'FFFF00', 'FFFFE0', 'F0E68C', 'EEDD82', 'DAA520', 'BDB76B', 'B8860B'
-                ];
-                const randomIndex = Math.floor(Math.random() * brightColors.length);
-                return brightColors[randomIndex];
-            }
-
-
-            function getRandomFromRange(min, max) {
-                return Math.floor(Math.random() * (max - min + 1)) + min;
-            }
+            addfromserver()
+                //Инитиализация
             window.addEventListener("resize", () => {
                 idtext.position(5, window.innerHeight - 125)
                 scradd.position(window.innerWidth - 155, window.innerHeight - 135)
@@ -242,146 +72,12 @@
             });
             noCanvas()
 
-            function shortenText(text) {
-                return text.length <= 50 ? text : text.slice(0, 50) + '..';
-            }
+
 
             //Загрузка чатов
 
-            fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_chats")
-                .then(response => response.text())
-                .then(data => {
-                    chatsJSON = data;
-                    console.log(chatsJSON) // выводим уже присвоенное значение
-                    let tchats = JSON.parse(chatsJSON)
-                    let num = tchats.length - 1
-                    let btnum = 0
-                    let pos = 75
-                    while (num > -1) {
-                        let xpos = pos
-                        let xbtnum = btnum
-                        let xnum = num
-
-                        fetch("https://sebain.pythonanywhere.com/saveget?filename=" + tchats[xnum].target + "_profn")
-                            .then(response => response.text())
-                            .then(data => {
-                                let clr
-                                let xid = tchats[xnum].chatid
-                                let tbutton = createButton(data)
-                                let xdata = data
-                                let targ = tchats[xnum].target
-                                tbutton.style('white-space', 'pre-wrap');
-                                //tbutton.html("Текст")
-                                tbutton.position(0, xpos)
-                                tbutton.size(window.innerWidth, 35)
-                                tbutton.style('border-radius', '8px');
-                                tbutton.style('text-align', 'left');
-                                tbutton.style('padding-left', '12px');
-                                chatbuttons[xbtnum] = tbutton
-                                tbutton.mousePressed(() => {
-                                    setCookie2("chatid", xid)
-                                    setCookie2("name", data)
-                                    setCookie2("colour", clr)
-                                    setCookie2("target", targ)
-                                    window.location.href = "chat.html";
-                                });
-                                tbutton.style("border-width", "3px");
-                                tbutton.style("border-color", "#00004d");
-                                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + targ + "_last-online&text=" + Math.floor(Date.now() / 1000))
-                                    .then(response => response.text())
-                                    .then(data => {
-                                        let dif1 = Math.floor(Date.now() / 1000) - data
-                                        let dstate
-                                        if (dif1 < 60) {
-                                            tbutton.style("border-width", "3px");
-                                            tbutton.style("border-color", "#009900");
-                                        }
-                                    })
-                                    .catch(error => {});
-                                let btn = createButton('');
-                                getProfUrl(tchats[xnum].target, btn)
-                                btn.style('background-size', 'cover');
-                                btn.position(window.innerWidth - 35, xpos)
-                                let pubk = tchats[xnum].target
-                                btn.mousePressed(() => {
-                                    overlay.style('background', 'rgba(0, 0, 0, 0.6)');
-                                    overlay.style('z-index', '100');
-                                    let fsimg = createButton('');
-                                    fsimg.style('z-index', '101');
-                                    getProfUrl(pubk, fsimg)
-                                    fsimg.style('background-size', 'cover');
-                                    fsimg.size(366, 366)
-                                    fsimg.position(0, 0)
-                                    fsimg.mousePressed(() => {
-                                        fsimg.remove()
-                                        overlay.style('background', '#ffffff');
-                                        overlay.style('z-index', '-100');
-                                    });
-                                });
-                                btn.size(35, 35)
-                                chatimgs[xbtnum] = btn
-                                fetch("https://sebain.pythonanywhere.com/get?filename=chat_" + xid)
-                                    .then(response => response.text())
-                                    .then(data => {
-                                        let history_newJSON = data
-                                        fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_oldchat" + xid)
-                                            .then(response => response.text())
-                                            .then(data => {
-                                                data = Decrypt(data)
-                                                let history_oldJSON = data
-                                                let new1 = JSON.parse(history_newJSON)
-                                                new1 = new1[new1.length - 1]
-                                                let old1 = JSON.parse(history_oldJSON)
-                                                console.log(JSON.stringify(new1))
-                                                if (JSON.stringify(new1) == JSON.stringify(old1)) {
-                                                    let history = JSON.parse(history_newJSON)
-                                                    let l = history.length - 1
-                                                    let text = history[l].value
-                                                    if (getCookie("nofilt") != 1) {
-                                                        text = filterTextWithBanwords(text);
-                                                    }
-                                                    tbutton.html(xdata + " [ПОСЛЕДНЕЕ]\n" + shortenText(text))
-
-                                                } else {
-                                                    tbutton.html(xdata + " [НОВОЕ]")
-                                                }
-                                            })
-                                            .catch(error => {
-                                                console.error("Ошибка при получении данных:", error);
-                                            });
-
-                                    })
-                                    .catch(error => {
-                                        console.error("Ошибка при получении данных:", error);
-                                    });
-                                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + tchats[xnum].target + "_colour")
-                                    .then(response => response.text())
-                                    .then(data => {
-                                        console.log(data)
-                                        if (data == "Файл не найден в save") {
-                                            console.log("Не получен цвет" + tchats[xnum].target)
-                                        } else {
-                                            tbutton.style('background-color', "#" + data);
-                                            clr = "#" + data
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error(error)
-                                    });
-                            })
-                            .catch(error => {
-                                console.error("Ошибка при получении данных:", error);
-                            });
-                        pos = pos + 33
-                        btnum++
-                        num--
-                    }
-                })
-                .catch(error => {
-                    console.error("Ошибка при получении данных:", error);
-                    alert("У вас нет ни одного чата??? Так добавь своего друга по его ID, если уже добавил или хочешь добавить жми ОК")
-                });
-            //Ник
+            load_chats()
+                //Ник
             let mynik
             console.log(getRandomBrightColor())
             fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_colour")
@@ -432,7 +128,7 @@
                         });
 
                 }
-            }, 15000); // 5000 миллисекунд = 5 секунд
+            }, 25000);
             // Остальное 
             let updates = createButton("Список обновлений")
             updates.style('background-color', '#ff9933');
@@ -440,6 +136,13 @@
             updates.position(window.innerWidth - 300, window.innerHeight - 75)
             updates.mousePressed(() => {
                 window.location.href = "update.html";
+            });
+            let grouper = createButton("Новая группа/канал")
+            grouper.style('background-color', '#44ff13');
+            grouper.style('border-radius', '12px');
+            grouper.position(window.innerWidth - 100, window.innerHeight - 50)
+            grouper.mousePressed(() => {
+                window.location.href = "grouper.html";
             });
             updates.style('position', 'fixed');
             updates.style('z-index', '101');
@@ -505,95 +208,7 @@
             addbutton.style('border-radius', '12px');
             addbutton.position(window.innerWidth - 150, window.innerHeight - 75)
             addbutton.mousePressed(() => {
-                canreload = false
-                let globalres = ""
-                let addid = prompt("Введите id вашего собеседника")
-                if (addid != pp || addid != "" || addid != "1") {
-                    fetch("https://sebain.pythonanywhere.com/saveget?filename=" + addid + "_profn")
-                        .then(response => response.text())
-                        .then(data => { // вызываем только после получения данных
-
-                            console.log(data);
-                            if (data == "Файл не найден в save") {
-                                alert("НЕВЕРНЫЙ ID")
-                                window.href.location = "homepage.html"
-                            }
-                            let chatid = String(getRandomFromRange(11111, 99999))
-
-                            function sent(chats, addid, chatid, pp) {
-                                chats.push({
-                                    target: pp,
-                                    chatid: chatid
-                                });
-
-                                let targetJSON = JSON.stringify(chats)
-                                let our = [{
-                                    target: addid,
-                                    chatid: chatid
-                                }];
-                                let ourJSON = JSON.stringify(our)
-                                let placeholder = [{
-                                    type: 'text',
-                                    value: "А вы знали что?: если нажать в списке чатов на колокол , затем нажать разрешить и ещё раз разрешить то вы будете получать уведомления в ваших чатах!",
-                                    sender: "system",
-                                    time: Math.floor(Date.now() / 1000)
-                                }];
-                                let placeholderJSON = JSON.stringify(placeholder)
-                                fetch("https://sebain.pythonanywhere.com/set?filename=chat_" + chatid + "&text=" + placeholderJSON)
-                                    .then(response => response.text())
-                                    .then(data => {
-                                        data = data
-                                        fetch("https://sebain.pythonanywhere.com/set?filename=newchats_" + addid + "&text=" + targetJSON)
-                                            .then(response => response.text())
-                                            .then(data => {
-                                                globalres = data;
-                                                fetch("https://sebain.pythonanywhere.com/set?filename=newchats_" + pp + "&text=" + ourJSON)
-                                                    .then(response => response.text())
-                                                    .then(data => {
-                                                        globalres = data; // выводим уже присвоенное значение
-                                                        alert("Чат добавлен, успех!")
-                                                        window.location.href = "homepage.html"
-                                                    })
-                                                    .catch(error => {
-                                                        alert("АЛЁЁЁЁ, ВСЁ СЛАМАЛАСЯ")
-                                                    }); // выводим уже присвоенное значение
-                                            })
-                                            .catch(error => {
-                                                alert("АЛЁЁЁЁ, ВСЁ СЛАМАЛАСЯ")
-                                            });
-                                    })
-                                    .catch(error => {
-                                        alert("АЛЁЁЁЁ, ВСЁ СЛАМАЛАСЯ")
-                                    });
-                            }
-                            fetch("https://sebain.pythonanywhere.com/get?filename=newchats_" + addid)
-                                .then(response => response.text())
-                                .then(data => {
-                                    globalres = data;
-                                    try {
-                                        let chats = JSON.parse(globalres)
-                                        sent(chats, addid, chatid, pp)
-                                    } catch {
-                                        console.log(error);
-                                        let chats = []
-                                        sent(chats, addid, chatid, pp)
-
-                                    } // выводим уже присвоенное значение
-                                })
-                                .catch(error => {
-                                    console.log(error)
-                                    let chats = []
-                                    sent(chats, addid, chatid, pp)
-                                }); // выводим уже присвоенное значение
-                        })
-                        .catch(error => {
-                            console.error("Ошибка при получении данных:", error);
-                            alert("Не верный ID")
-                            window.location.href = "homepage.html";
-                        });
-                } else {
-                    alert("Не верный Id")
-                }
+                addbyid()
             });
             addbutton.style('position', 'fixed');
             addbutton.style('z-index', '101');

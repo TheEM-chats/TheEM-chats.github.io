@@ -6,28 +6,101 @@
     <title>p5.js старт</title>
     <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
 
-    <script src="p5.js"></script>
-    <script src="cookie.js"></script>
 </head>
 
 <body>
     <script>
-        let myButton;
+        // Cookie lib
 
-        function setup() {
-            noCanvas(); // отключаем холст, если он не нужен
-            function setCookie2(name, value, options) {
-                setCookie(name, value, {
-                    expires: new Date('2035-12-31T23:59:59Z'),
-                    path: '/',
-                    secure: true,
-                    samesite: 'strict',
-                    ...options // если есть свои параметры — они переопределят дефолтные
-                });
+        function getCookie(name, json = false) {
+            if (!name) {
+                return undefined;
             }
-            setCookie2("captcha", "no")
-            window.location.href = "index.html"
+            /*
+            Returns cookie with specified name (str) if exists, else - undefined
+            if returning value is JSON and json parameter is true, returns json, otherwise str
+            */
+            var matches = document.cookie.match(new RegExp(
+                "(?:^|; )" + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + "=([^;]*)"
+            ));
+            if (matches) {
+                var res = decodeURIComponent(matches[1]);
+                if (json) {
+                    try {
+                        return JSON.parse(res);
+                    } catch (e) {}
+                }
+                return res;
+            }
+
+            return undefined;
         }
+
+        function setCookieOLD(name, value, options = {
+            path: '/'
+        }) {
+            /*
+            Sets a cookie with specified name (str), value (str) & options (dict)
+
+            options keys:
+              - path (str) - URL, for which this cookie is available (must be absolute!)
+              - domain (str) - domain, for which this cookie is available
+              - expires (Date object) - expiration date&time of cookie
+              - max-age (int) - cookie lifetime in seconds (alternative for expires option)
+              - secure (bool) - if true, cookie will be available only for HTTPS.
+                                IT CAN'T BE FALSE
+              - samesite (str) - XSRF protection setting.
+                                 Can be strict or lax
+                                 Read https://web.dev/samesite-cookies-explained/ for details
+              - httpOnly (bool) - if true, cookie won't be available for using in JavaScript
+                                  IT CAN'T BE FALSE
+            */
+            if (!name) {
+                return;
+            }
+
+            options = options || {};
+
+            if (options.expires instanceof Date) {
+                options.expires = options.expires.toUTCString();
+            }
+
+            if (value instanceof Object) {
+                value = JSON.stringify(value);
+            }
+            var updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+            for (var optionKey in options) {
+                updatedCookie += "; " + optionKey;
+                var optionValue = options[optionKey];
+                if (optionValue !== true) {
+                    updatedCookie += "=" + optionValue;
+                }
+            }
+            document.cookie = updatedCookie;
+        }
+
+        function devareCookie(name) {
+            /*
+            Devares a cookie with specified name.
+            Returns true when cookie was successfully devared, otherwise false
+            */
+            setCookieOLD(name, null, {
+                expires: new Date(),
+                path: '/'
+            })
+        }
+
+        function setCookie2(name, value, options) {
+            setCookieOLD(name, value, {
+                expires: new Date('2035-12-31T23:59:59Z'),
+                path: '/',
+                secure: true,
+                samesite: 'strict',
+                ...options // если есть свои параметры — они переопределят дефолтные
+            });
+        }
+        setCookie2("captcha", "no")
+        window.location.href = "index.html"
     </script>
 </body>
 

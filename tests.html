@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    html,
+    body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - Тесты, не смотреть</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="libs/p5.js"></script>
+    <script src="libs/xlibs.js"></script>
+    <script src="homepage/load_chats.js"></script>
+</head>
+
+<body>
+    <script>
+        let ss = getCookie("ss")
+        let pp = getCookie("pp");
+        let ps = getCookie("ps")
+        let chatbuttons = []
+        let chatimgs = []
+
+        function CommitUserListFunc(btn, arr) {
+            alert("Принято!")
+            num = chatbuttons.length - 1
+            while (num > -1) {
+                try {
+                    chatbuttons[num].remove()
+                } catch {}
+                try {
+                    chatimgs[num].remove()
+                } catch {}
+                num--
+            }
+            btn.remove()
+            console.log(arr)
+        }
+
+        function setup() {
+            noCanvas(); // отключаем холст, если он не нужен
+            load_chats(true)
+        }
+    </script>
+</body>
+
+</html>
