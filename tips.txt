@@ -1,0 +1,380 @@
+/set?filename=test1.txt&text=hello world — сохранить файл
+
+/get?filename=test1.txt — получить файл
+
+/saveget?filename=99911_giy — найти полный файл с таким префиксом
+
+/saveset?filename=9991151234_giy&text=data — сохранить, если нет дубликата
+
+
+Сегодня
+привет я хочу начать писать код на js p5 dom напиши мне код для старта который создаёт кнопку и подлючает библиотеку в одном файле
+Привет, Богдан! Отличное решение — p5.js с дополнением p5.dom открывают море творческих возможностей. Вот простой стартовый код, который подключает библиотеку и создаёт кнопку прямо в одном HTML-файле:
+
+html
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>p5.js старт</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+    
+    <script src="p5.js"></script>
+    <script src="cookie.js"></script>
+  </head>
+  <body>
+    <script>
+      let myButton;
+
+      function setup() {
+        noCanvas(); // отключаем холст, если он не нужен
+        myButton = createButton("Нажми меня");
+        myButton.mousePressed(() => {
+          alert("Ты нажал кнопку!");
+        });
+      }
+    </script>
+  </body>
+</html>
+
+let myButton;
+
+function setup() {
+  noCanvas();
+
+  myButton = createButton('👉 Нажми сюда');
+  myButton.position(100, 150); // позиция: x=100, y=150
+  myButton.size(200, 50);      // ширина: 200, высота: 50
+  myButton.style('font-size', '18px');  // размер текста
+  myButton.style('color', '#ffffff');   // цвет текста
+  myButton.style('background-color', '#ff5733'); // фон кнопки
+  myButton.style('border-radius', '12px');       // скругление углов
+
+  myButton.mousePressed(() => {
+    console.log('Кнопка нажата!');
+  });
+}
+
+
+let arr = [10, 20, 30, 40];
+
+let secondItem = arr[1]; // вернёт 20
+
+
+
+let taggedArr = [
+  { tag: 'button', value: 1342 },
+  { tag: 'input', value: 4511 }
+];
+console.log(taggedArr[0].tag);    // 'button'
+console.log(taggedArr[0].value);  // 1342
+
+
+let length = taggedArr.length;
+
+
+let jsonStr = '[{"tag":"button","value":1342},{"tag":"input","value":4511}]';
+let parsedArr = JSON.parse(jsonStr); // теперь это массив объектов
+
+
+let exportJson = JSON.stringify(parsedArr); // строка JSON для отправки или сохранения
+
+
+
+let taggedArr = [
+  { tag: 'button', value: 1342 },
+  { tag: 'input', value: 4511 },
+  { tag: 'slider', value: 8821 }
+];
+
+
+
+taggedArr[1].tag = 'sass';
+
+console.log(taggedArr[1]); // { tag: 'sass', value: 4511 }
+
+
+taggedArr[1].style = 'bold'; // добавляем новое поле
+
+
+taggedArr[1] = { tag: 'sass', value: 9999 };
+
+            let globalres = "";
+            noCanvas();
+
+            let myButton = createButton("Нажми меня");
+            myButton.html("попа");
+
+            console.log(getCookie('cok')); // Это сработает сразу при запуске
+
+            myButton.mousePressed(() => {
+                fetch("https://sebain.pythonanywhere.com/saveget?filename=99911_giy")
+                    .then(response => response.text())
+                    .then(data => {
+                        globalres = data;
+                        setCookie2('cok', globalres); // вызываем только после получения данных
+                        console.log(globalres); // выводим уже присвоенное значение
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                    });
+            });
+
+куки плюс запрос
+
+
+let a = 5;
+let b = 10;
+
+// Сравнение
+if (a < b) {
+  console.log("a меньше b");
+} else if (a === b) {  // строгое равенство
+  console.log("a равно b");
+} else {
+  console.log("a больше b");
+}
+
+
+
+
+let i = 0;
+while (i < 5) {
+  console.log(i);
+  i++;
+}
+
+
+
+let width = window.innerWidth;
+let height = window.innerHeight;
+
+console.log("Ширина: " + width + ", Высота: " + height);
+
+
+
+window.addEventListener("resize", () => {
+  console.log("Размер окна изменился:");
+  console.log("Новая ширина: " + window.innerWidth);
+  console.log("Новая высота: " + window.innerHeight);
+});
+
+
+
+
+window.addEventListener("wheel", (event) => {
+  if (event.deltaY > 0) {
+    console.log("Колёсиком вниз 🔽");
+  } else {
+    console.log("Колёсиком вверх 🔼");
+  }
+});
+
+
+
+
+let startY = 0;
+
+window.addEventListener("touchstart", (e) => {
+  startY = e.touches[0].clientY;
+});
+
+window.addEventListener("touchmove", (e) => {
+  let currentY = e.touches[0].clientY;
+
+  if (currentY < startY) {
+    console.log("Палец вверх 🔼");
+  } else {
+    console.log("Палец вниз 🔽");
+  }
+
+  startY = currentY;
+});
+
+
+function sayHello() {
+  console.log("Привет, Богдан!");
+}
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>p5.js старт</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+    <!-- Main version -->
+    <script src="p5.js"></script>
+    <script src="cookie.js"></script>
+</head>
+
+<body>
+    <script>
+        function setup() {
+            let globalres = "";
+            noCanvas();
+
+            let myButton = createButton("Нажми меня");
+            myButton.html("попа");
+
+            console.log(getCookie('cok')); // Это сработает сразу при запуске
+
+            myButton.mousePressed(() => {
+                fetch("https://sebain.pythonanywhere.com/saveget?filename=99911_giy")
+                    .then(response => response.text())
+                    .then(data => {
+                        globalres = data;
+                        setCookie2('cok', globalres); // вызываем только после получения данных
+                        console.log(globalres); // выводим уже присвоенное значение
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                    });
+            });
+
+        }
+    </script>
+</body>
+
+</html>
+
+
+function getRandomFromRange(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+let rnd = getRandomFromRange(11111, 99999);
+console.log(rnd);
+
+
+window.location.href = "ebalmik.html";
+
+setInterval(() => {
+  console.log("Каждые 5 секунд: пип!");
+}, 5000); // 5000 миллисекунд = 5 секунд
+
+
+let userName = prompt("Как тебя зовут?");
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+function setCookie2(name, value, options) {
+    setCookie(name, value, {
+      expires: new Date('2035-12-31T23:59:59Z'),
+      path: '/',
+      secure: true,
+      samesite: 'strict',
+      ...options  // если есть свои параметры — они переопределят дефолтные
+    });
+  }
+
+
+setCookie2("cat-name", "myaw-data")
+getCookie("cat-name")
+
+
+function Crypt(text) {
+  return encodeURIComponent(text);
+}
+
+function Decrypt(text) {
+  try {
+    return decodeURIComponent(text);
+  } catch (e) {
+    return text;
+  }
+}
+
+            if (getCookie("captcha") == "yes") {
+                alert("Пройдите капчу")
+                window.location.href = "captcha.html"
+            }
+
+
+
+
+fetch('https://sebain.pythonanywhere.com/call_set_post', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    filename: '1xxx',
+    text: '15xxx'
+  })
+})
+.then(response => {
+  if (!response.ok) {
+    throw new Error(`Ошибка: ${response.status}`);
+  }
+  return response.text(); // или .json(), если сервер возвращает JSON
+})
+.then(data => {
+  console.log('Ответ от сервера:', data);
+})
+.catch(error => {
+  console.error('Ошибка запроса:', error);
+});
+
+Уровни доступа:
+0 - всё всем можно
+1 - push backpush unreg get
+2 - backpush unreg get
+
+Группа и канал имеют:
+(id)_profn - имя - 2
+(id)_img - картинка - 2
+chat_(id) - список сообщений - 1(группа) - 2(канал)
+(id)_owner - pp владельца - 2
+(id)_ignore - список банов - 2
+
+target это если лс то id аккаунта, если нет то channel или group
+chatid (id) он и там и там
+
+
+
+
+
+
+
+
+
+
+/set	/set?filename=test.json&text=...&pass=секрет
+/push	/push?filename=test.json&text=...&pass=секрет
+/backpush	/backpush?filename=test.json&text=...&pass=секрет
+/changer	/changer?filename=test.json&uid=123&text=...&pass=секрет
+/unreg	/unreg?filename=test.json&key=abcde&pass=секрет
+/set_post	JSON: {"filename": "test.json", "text": "...", "pass": "секрет"}
+/get_post	JSON: {"filename": "test.json", "pass": "секрет"}
+/createpass	/createpass?filename=test.json&pass=секрет&level=1
+
+/addpass?filename=data.txt&pass=mainpass&2pass=secret123
+/updatepass?filename=data.txt&2pass=secret123&new2pass=newsecret456
+/rempass?filename=data.txt&pass=mainpass&2pass=newsecret456
+/get?filename=data.txt&pass=newsecret456
+
+
+fetch("https://sebain.pythonanywhere.com/saveget?filename=99911_giy")
+                    .then(response => response.text())
+                    .then(data => {
+                        fetch("https://sebain.pythonanywhere.com/saveget?filename=99911_giy")
+                    .then(response => response.text())
+                    .then(data => {
+                        globalres = data;
+                        setCookie2('cok', globalres); // вызываем только после получения данных
+                        console.log(globalres); // выводим уже присвоенное значение
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                    });
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении данных:", error);
+                    });
