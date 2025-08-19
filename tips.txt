@@ -361,20 +361,3 @@ chatid (id) он и там и там
 /get?filename=data.txt&pass=newsecret456
 
 
-fetch("https://sebain.pythonanywhere.com/saveget?filename=99911_giy")
-                    .then(response => response.text())
-                    .then(data => {
-                        fetch("https://sebain.pythonanywhere.com/saveget?filename=99911_giy")
-                    .then(response => response.text())
-                    .then(data => {
-                        globalres = data;
-                        setCookie2('cok', globalres); // вызываем только после получения данных
-                        console.log(globalres); // выводим уже присвоенное значение
-                    })
-                    .catch(error => {
-                        console.error("Ошибка при получении данных:", error);
-                    });
-                    })
-                    .catch(error => {
-                        console.error("Ошибка при получении данных:", error);
-                    });

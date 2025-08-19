@@ -17,36 +17,55 @@
 
     <script src="libs/p5.js"></script>
     <script src="libs/xlibs.js"></script>
-    <script src="homepage/load_chats.js"></script>
 </head>
 
 <body>
     <script>
-        let ss = getCookie("ss")
-        let pp = getCookie("pp");
-        let ps = getCookie("ps")
-        let chatbuttons = []
-        let chatimgs = []
+        function styleGlassButton(btn) {
+            //btn.style('padding', '10px 28px'); // сбалансированный размер
+            //btn.style('font-size', '16px');
+            //btn.style('font-weight', '600');
+            btn.style('color', '#ffffff');
+            btn.style('background', 'rgba(120, 160, 255, 0.18)'); // мягкий синий
+            btn.style('border', '1px solid rgba(255, 255, 255, 0.25)');
+            btn.style('border-radius', '999px'); // таблетка!
+            btn.style('backdrop-filter', 'blur(6px)');
+            btn.style('-webkit-backdrop-filter', 'blur(6px)');
+            btn.style('box-shadow', '0 2px 6px rgba(0, 0, 0, 0.15)');
+            btn.style('cursor', 'pointer');
+            btn.style('transition', 'all 0.2s ease');
 
-        function CommitUserListFunc(btn, arr) {
-            alert("Принято!")
-            num = chatbuttons.length - 1
-            while (num > -1) {
-                try {
-                    chatbuttons[num].remove()
-                } catch {}
-                try {
-                    chatimgs[num].remove()
-                } catch {}
-                num--
-            }
-            btn.remove()
-            console.log(arr)
+            // Убираем центрирование — пусть кнопка появляется там, где ты её вставишь
+            //btn.style('display', 'inline-block');
+            //btn.style('margin', '12px');
+
+            btn.mouseOver(() => {
+                btn.style('background', 'rgba(140, 180, 255, 0.25)');
+                btn.style('box-shadow', '0 3px 10px rgba(0, 0, 0, 0.25)');
+            });
+
+            btn.mouseOut(() => {
+                btn.style('background', 'rgba(120, 160, 255, 0.18)');
+                btn.style('box-shadow', '0 2px 6px rgba(0, 0, 0, 0.15)');
+            });
         }
+
+
 
         function setup() {
             noCanvas(); // отключаем холст, если он не нужен
-            load_chats(true)
+            document.body.style.backgroundImage = "url('back2.jpg')";
+            document.body.style.backgroundSize = "cover";
+            document.body.style.backgroundPosition = "center";
+            document.body.style.height = "100vh";
+            document.body.style.margin = "0";
+            document.body.style.display = "flex";
+            document.body.style.justifyContent = "center";
+            document.body.style.alignItems = "center";
+            let btn = createButton('ЩЦЦЦЩ');
+            styleGlassButton(btn);
+            btn.size(100, 25)
+            btn.position(0, 0)
         }
     </script>
 </body>
