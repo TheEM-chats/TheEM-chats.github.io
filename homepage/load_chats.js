@@ -51,6 +51,12 @@ function load_chats(intGrt = false) {
             console.log(chatsJSON) // выводим уже присвоенное значение
             let tchats = JSON.parse(chatsJSON)
             tchats = filterUniqueByChatId(tchats)
+            if (!intGrt) {
+                tchats.unshift({
+                    target: "note",
+                    chatid: "notes_" + ps
+                });
+            }
             let num = tchats.length - 1
             let btnum = 0
             let pos = 75
@@ -70,6 +76,10 @@ function load_chats(intGrt = false) {
                         type = "group"
                         displaytype = " [Группа]"
                         console.log("Группа")
+                    } else if (tchats[xnum].target == "note") {
+                        type = "note"
+                        displaytype = " [ЗАМЕТКИ]"
+                        console.log("Заметки")
                     } else {
                         console.log("Просто чат")
                     }
@@ -80,6 +90,10 @@ function load_chats(intGrt = false) {
                 if (type != "basic") {
                     nameurl = "https://sebain.pythonanywhere.com/get?filename=" + tchats[xnum].chatid + "_profn"
                 }
+                if (type == "note") {
+                    nameurl = "https://theem-chats.github.io/manifest.json";
+                    //Заглушка для заметок
+                }
                 InProcess++
                 fetch(nameurl)
                     .then(response => response.text())
@@ -89,6 +103,9 @@ function load_chats(intGrt = false) {
                         let xid = tchats[xnum].chatid
                         let tbutton = createButton(data)
                         let xdata = data
+                        if (type == "note") {
+                            xdata = "Заметки"
+                        }
                         let targ = tchats[xnum].target
                         tbutton.style('white-space', 'pre-wrap');
                         //tbutton.html("Текст")
