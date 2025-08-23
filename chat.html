@@ -906,7 +906,10 @@
                 }
             }
             setInterval(() => {
-                inputposititoner(window.visualViewport.height)
+                const y = window.visualViewport ?
+                    window.visualViewport.height :
+                    window.innerHeight;
+                inputposititoner(y);
             }, 500);
             // включай один раз при инициализации
             document.addEventListener('touchstart', function(e) {
@@ -925,13 +928,13 @@
                 passive: false
             });
 
-            //            //Начало над полевводные кнопки и инпут
-            //            window.addEventListener("resize", () => {
-            //                inputposititoner()
-            //            });
-            //            window.visualViewport.addEventListener('resize', () => {
-            //                inputposititoner(window.visualViewport.height)
-            //            });
+            //Начало над полевводные кнопки и инпут
+            window.addEventListener("resize", () => {
+                inputposititoner()
+            });
+            window.visualViewport.addEventListener('resize', () => {
+                inputposititoner(window.visualViewport.height)
+            });
 
             var input = createInput()
             ButtonStyling(input)
