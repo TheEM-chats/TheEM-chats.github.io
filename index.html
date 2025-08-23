@@ -1,51 +1,264 @@
 <!DOCTYPE html>
 <html lang="ru">
+<link rel="manifest" href="/manifest.json">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    html,
+    body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+</style>
 
 <head>
     <meta charset="UTF-8" />
-    <title>TheEM - Регистрация</title>
+    <title>TheEM - Вход и Регистрация</title>
     <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
-    <!-- Main version -->
+
     <script src="libs/p5.js"></script>
     <script src="libs/xlibs.js"></script>
-    <script src="index/reg.js"></script>
     <script src="index/log.js"></script>
+    <script src="index/reg.js"></script>
 </head>
 
 <body>
     <script>
+        var isReg = true
+        var btnx
+        var btny
+        var btnanim
+        var last_captcha
+        let Zframe
+            // Вставляем CSS через JavaScript
+        let lgnstyle = document.createElement('style');
+        lgnstyle.innerHTML = `
+    input::placeholder {
+      color: var(--placeholder-color);
+      font-weight: bold;
+      opacity: 1; /* делаем его полностью видимым */
+    }
+  `;
+        document.head.appendChild(lgnstyle);
+
+        function hasInvalidCharacters(text) {
+            // Разрешены: латиница, кириллица, цифры, пробел, @ и .
+            const regex = /^[a-zA-Zа-яА-ЯёЁ0-9@. ]+$/;
+            return !regex.test(text);
+        }
+
         function setup() {
             if (getCookie("IsReg") == "1") {
                 window.location.href = "homepage.html";
             }
 
-            noCanvas(); // отключаем холст, если он не нужен
-            var text = createP("Добро пожаловать в TheEasyMessanger")
-            text.position(0, -10)
-            var reg = createButton("Регистрация");
-            reg.position(0, 50);
-            reg.size(window.innerWidth, 150)
-            reg.style('background-color', '#ff5733'); // фон кнопки
-            reg.style('border-radius', '12px');
-            reg.mousePressed(() => {
-                reg_func()
-            });
-            var log = createButton("Войти");
-            log.position(0, 200);
-            log.size(window.innerWidth, 150)
-            log.style('background-color', '#0000ff'); // фон кнопки
-            log.style('border-radius', '12px');
+            setInterval(() => {
+                if (getCookie("captcha") == "no") {
+                    captcha.checked(true)
+                    try {
+                        Zframe.remove()
+                    } catch {
+
+                    }
+                } else {
+                    captcha.checked(false)
+                }
+                if (!isReg) {
+                    captcha.hide()
+                    btndo.position((window.innerWidth - 342) / 2, (window.innerHeight + 50) / 2)
+                    btndo.size(340, 70)
+                } else {
+                    captcha.show()
+                    btndo.position((window.innerWidth - 342) / 2, (window.innerHeight + 100) / 2)
+                    btndo.size(340, 46)
+                }
+                last_captcha = captcha.checked()
+                console.log("Обновление!");
+                if (btnanim != "n") {
+                    updatepos()
+                }
+            }, 250);
+
+            function updatepos() {
+                regbord.position((window.innerWidth - 342) / 2, (window.innerHeight - 194) / 2)
+                logbord.position((window.innerWidth) / 2, (window.innerHeight - 194) / 2)
+                lgn.position((window.innerWidth - 342) / 2, (window.innerHeight - 114) / 2)
+                lgnp.position((window.innerWidth - 342) / 2, (window.innerHeight - 134) / 2)
+                pss.position((window.innerWidth - 342) / 2, (window.innerHeight - 31) / 2)
+                pssp.position((window.innerWidth - 342) / 2, (window.innerHeight - 51) / 2)
+                btndo.position((window.innerWidth - 342) / 2, (window.innerHeight + 100) / 2)
+                captcha.position((window.innerWidth - 342) / 2, (window.innerHeight + 50) / 2)
+                fsimg.position((window.innerWidth - 128) / 2, (window.innerHeight - 480) / 2)
+                if (isReg) {
+                    btnx = (window.innerWidth - 342) / 2
+                    btny = (window.innerHeight - 194) / 2
+                } else {
+                    btnx = (window.innerWidth) / 2
+                    btny = (window.innerHeight - 194) / 2
+                }
+
+                btnanim = "n"
+                btn.position(btnx, btny)
+            }
             window.addEventListener("resize", () => {
-                log.size(window.innerWidth, 150)
-                reg.size(window.innerWidth, 150)
+                updatepos()
             });
-            log.mousePressed(() => {
-                log_func()
+            noCanvas();
+            BackStyling()
+            let btn = createButton('')
+            ButtonStyling(btn)
+            btn.size(170, 35)
+            btn.style('border-radius', '8px')
+            btn.style('z-index', '-1')
+            btn.style('position', 'absolute')
+            btn.style('background', 'rgba(255, 80, 80, 0.3)')
+            btn.style('box-shadow', '0 2px 6px rgba(150, 0, 0, 0.2)')
+
+            btn.mouseOver(() => {
+                btn.style('background', 'rgba(255, 100, 100, 0.45)')
+                btn.style('box-shadow', '0 3px 10px rgba(150, 0, 0, 0.35)')
             });
 
+            btn.mouseOut(() => {
+                btn.style('background', 'rgba(255, 80, 80, 0.3)')
+                btn.style('box-shadow', '0 2px 6px rgba(150, 0, 0, 0.2)')
+            });
+
+            btn.mouseOver(() => {});
+            btn.mouseOut(() => {});
+            btn.style('cursor', 'default')
+                //Главный борьер
+            mainbord = createButton("")
+            mainbord.style('background', 'transparent');
+            mainbord.size(356, 200)
+            mainbord.style('border-radius', '5px')
+            mainbord.style('border', '2px solid #bbbbbb');
+            //Регистрация
+            regbord = createButton("Регистрация")
+            regbord.style('color', '#ffffff');
+            regbord.style('background', 'transparent');
+            regbord.size(170, 35)
+            regbord.style('border-radius', '5px')
+            regbord.style('border', '2px solid #bbbbbb');
+            regbord.mousePressed(() => {
+                btnanim = "-"
+                isReg = true
+            });
+            //Логин
+            logbord = createButton("Вход")
+            logbord.style('color', '#ffffff');
+            logbord.style('background', 'transparent');
+            logbord.size(170, 35)
+            logbord.style('border-radius', '5px')
+            logbord.style('border', '2px solid #bbbbbb');
+            logbord.mousePressed(() => {
+                btnanim = "+"
+                isReg = false
+            });
+            //Ник - логин
+            lgn = createInput("")
+            lgn.attribute('placeholder', 'Ваш логин(как ник но не меняется):');
+            lgn.elt.style.setProperty('--placeholder-color', '#cccccc')
+            lgn.size(318, 35)
+            lgn.style('padding-left', '20px')
+            ButtonStyling(lgn)
+            lgn.style('border-radius', '10px')
+            lgnp = createP("👤")
+                //Пароль
+            pss = createInput("")
+            pss.attribute('placeholder', 'Ваш пароль:');
+            pss.elt.style.setProperty('--placeholder-color', '#cccccc')
+            pss.size(318, 35)
+            pss.style('padding-left', '20px')
+            ButtonStyling(pss)
+            pss.style('border-radius', '10px')
+            pssp = createP("🔑")
+                //Кнопочка действия
+            let btndo = createButton('Действовать!')
+            ButtonStyling(btndo)
+            btndo.size(340, 46)
+            btndo.style('border-radius', '8px')
+            btndo.style('background', 'rgba(100, 200, 150, 0.18)');
+            btndo.style('box-shadow', '0 2px 6px rgba(0, 100, 50, 0.15)');
+
+            btndo.mouseOver(() => {
+                btndo.style('background', 'rgba(120, 220, 170, 0.25)');
+                btndo.style('box-shadow', '0 3px 10px rgba(0, 100, 50, 0.25)');
+            });
+
+            btndo.mouseOut(() => {
+                btndo.style('background', 'rgba(100, 200, 150, 0.18)');
+                btndo.style('box-shadow', '0 2px 6px rgba(0, 100, 50, 0.15)');
+            });
+            btndo.mousePressed(() => {
+                if (lgn.value() != "" && pss.value() != "") {
+                    if (!hasInvalidCharacters(lgn.value()) && !hasInvalidCharacters(pss.value())) {
+                        if (isReg) {
+                            if (captcha.checked()) {
+                                console.log("Регистрируем")
+                                reg_func(lgn.value(), pss.value())
+                            } else {
+                                xAlert("Сначала пройдите каптчу!!!")
+                            }
+                        } else {
+                            console.log("Входим")
+                            log_func(lgn.value(), pss.value())
+                        }
+                    } else {
+                        xAlert("В пароле и логине могут быть только (пробел)(буквы)(цифры)(@ и .)")
+                    }
+                } else {
+                    xAlert("Логин и пароль не должны быть пустыми!")
+
+                }
+            });
+            //Каптча
+            captcha = createCheckbox('Каптчаㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ', false);
+            ButtonStyling(captcha)
+            captcha.changed(handleChange);
+            captcha.size(340, 22)
+            captcha.style('cursor', 'default')
+            captcha.mouseOver(() => {});
+            captcha.mouseOut(() => {});
+            setCookie2("captcha", "idk")
+
+            //Иконка
+            let fsimg = createButton('');
+            fsimg.style('z-index', '101');
+            fsimg.size(128, 128)
+            fsimg.position(0, 0)
+            ButtonStyling(fsimg)
+            fsimg.style('background-image', 'url("ico2.jpg")')
+            fsimg.style('background-size', 'cover');
+            fsimg.style('border-radius', '15px')
+            fsimg.mouseOver(() => {});
+            fsimg.mouseOut(() => {});
+            //Обновление
+            updatepos()
+        }
+
+        function handleChange() {
+            console.log("Каптча нажата!");
+            setTimeout(() => {
+                Zframe = createElement('iframe');
+                Zframe.attribute('src', 'captcha.html');
+                Zframe.size(window.innerWidth - 100, window.innerHeight - 100);
+                Zframe.position(50, 50);
+                Zframe.style('z-index', '9999');
+                Zframe.style('position', 'absolute');
+                Zframe.style('border-radius', '10px');
+                Zframe.style('pointer-events', 'auto');
+                Zframe.parent(document.body);
+                Zframe.elt.focus();
+            }, 100); // 100 мс задержка
         }
     </script>
+    <script>
+        if (typeof navigator.serviceWorker !== 'undefined') {
+            navigator.serviceWorker.register('webpushr-sw.js')
+        }
+    </script>
+
 </body>
 
 </html>

@@ -1,11 +1,9 @@
 function OvlayShow() {
-    overlay.style('background', 'rgba(0, 0, 0, 0.6)');
-    overlay.style('z-index', '100');
+    overlay.show()
 }
 
 function OvlayHide() {
-    overlay.style('background', '#ffffff');
-    overlay.style('z-index', '-100');
+    overlay.hide()
     try {
         btnOpen.remove()
     } catch {}
@@ -40,33 +38,40 @@ function MenuShow(editnum) {
         btnText.style('position', 'fixed');
         btnText.style('z-index', '101');
         btnText.style('border-radius', '8px');
+        ButtonStyling(btnText)
         let edtst
         if (history[editnum].type == "text") {
             edtst = "text"
             btnEdit = createButton('Изменить');
             btnEdit.mousePressed(() => {
                 editmenu = 1
-                let place = prompt("Новое сообщение:")
-                if (place !== "" && place !== null) {
-                    history[editnum].prevvalue = history[editnum].value
-                    history[editnum].value = place + " (изменено)"
-                    history[editnum].time = Math.floor(Date.now() / 1000)
-                    fetch("https://sebain.pythonanywhere.com/changer?filename=chat_" + getCookie("chatid") + "&text=" + JSON.stringify(history[editnum]) + "&uid=" + uid + andpass)
-                        .then(response => response.text())
-                        .then(data => {
-                            SoundEffect("push.mp3")
-                            editmenu = 0
-                            render()
-                            OvlayHide()
-                        })
-                        .catch(error => {
-                            editmenu = 0
-                            console.error("Ошибка при получении данных:", error);
-                        });
+                var uidXS = uid
+                var historyeditnum = history[editnum]
 
-                } else {
-                    editmenu = 0
+                function edit(place) {
+                    if (place !== "" && place !== null) {
+                        historyeditnum.prevvalue = historyeditnum.value
+                        historyeditnum.value = place + " (изменено)"
+                        historyeditnum.time = Math.floor(Date.now() / 1000)
+                        fetch("https://sebain.pythonanywhere.com/changer?filename=chat_" + getCookie("chatid") + "&text=" + JSON.stringify(historyeditnum) + "&uid=" + uidXS + andpass)
+                            .then(response => response.text())
+                            .then(data => {
+                                SoundEffect("push.mp3")
+                                editmenu = 0
+                                render()
+                                OvlayHide()
+                            })
+                            .catch(error => {
+                                editmenu = 0
+                                console.error("Ошибка при получении данных:", error);
+                            });
+
+                    } else {
+                        editmenu = 0
+                    }
                 }
+                xPrompt("Новое сообщение:", edit)
+
 
             });
         } else if (history[editnum].type == "img") {
@@ -82,6 +87,7 @@ function MenuShow(editnum) {
             btnEdit.style('position', 'fixed');
             btnEdit.style('z-index', '101');
             btnEdit.style('background-color', '#3366cc');
+            superstyler(btnEdit, '#3366cc')
         } catch {
             console.log("Изменять нельзя")
         }
@@ -120,6 +126,7 @@ function MenuShow(editnum) {
         btnOpen.style('position', 'fixed');
         btnOpen.style('z-index', '101');
         btnOpen.style('background-color', '#3366cc');
+        superstyler(btnOpen, '#3366cc')
 
 
         btnDelete = createButton('Удалить');
@@ -128,6 +135,7 @@ function MenuShow(editnum) {
         btnDelete.style('position', 'fixed');
         btnDelete.style('z-index', '101');
         btnDelete.style('background-color', '#ff5733');
+        superstyler(btnDelete, '#ff5733')
         btnDelete.mousePressed(() => {
             history[editnum].prevsender = history[editnum].sender
             history[editnum].prevvalue = history[editnum].value
@@ -151,6 +159,7 @@ function MenuShow(editnum) {
         btnCopy.style('position', 'fixed');
         btnCopy.style('z-index', '101');
         btnCopy.style('background-color', '#b3b3b3');
+        superstyler(btnCopy, '#b3b3b3')
         btnCopy.mousePressed(() => {
             navigator.clipboard.writeText(history[editnum].value)
                 .then(() => {
@@ -167,6 +176,7 @@ function MenuShow(editnum) {
         btnCancel.style('position', 'fixed');
         btnCancel.style('z-index', '101');
         btnCancel.style('background-color', '#b3b3b3');
+        superstyler(btnCancel, '#b3b3b3')
         btnCancel.mousePressed(() => {
             OvlayHide()
         });
@@ -193,6 +203,7 @@ function MenuShow(editnum) {
         btnText.style('position', 'fixed');
         btnText.style('z-index', '101');
         btnText.style('border-radius', '8px');
+        ButtonStyling(btnText)
         if (history[editnum].type == "img") {
             btnEdit = createButton('Открыть (как картинку)');
             btnEdit.mousePressed(() => {
@@ -203,6 +214,7 @@ function MenuShow(editnum) {
             btnEdit.style('position', 'fixed');
             btnEdit.style('z-index', '101');
             btnEdit.style('background-color', '#3366cc');
+            superstyler(btnEdit, '#3366cc')
         }
 
 
@@ -241,6 +253,7 @@ function MenuShow(editnum) {
         btnOpen.style('position', 'fixed');
         btnOpen.style('z-index', '101');
         btnOpen.style('background-color', '#3366cc');
+        superstyler(btnOpen, '#3366cc')
 
         btnCopy = createButton('Копировать');
         btnCopy.position(0, 250);
@@ -248,6 +261,7 @@ function MenuShow(editnum) {
         btnCopy.style('position', 'fixed');
         btnCopy.style('z-index', '101');
         btnCopy.style('background-color', '#b3b3b3');
+        superstyler(btnCopy, '#b3b3b3')
         btnCopy.mousePressed(() => {
             navigator.clipboard.writeText(history[editnum].value)
                 .then(() => {
@@ -264,6 +278,7 @@ function MenuShow(editnum) {
         btnCancel.style('position', 'fixed');
         btnCancel.style('z-index', '101');
         btnCancel.style('background-color', '#b3b3b3');
+        superstyler(btnCancel, '#b3b3b3')
         btnCancel.mousePressed(() => {
             OvlayHide()
         });
@@ -274,6 +289,7 @@ function MenuShow(editnum) {
             btnDelete.style('position', 'fixed');
             btnDelete.style('z-index', '101');
             btnDelete.style('background-color', '#ff5733');
+            superstyler(btnDelete, '#b3b3b3')
             btnDelete.mousePressed(() => {
                 history[editnum].prevsender = history[editnum].sender
                 history[editnum].prevvalue = history[editnum].value

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    html,
+    body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - Тесты, не смотреть</title>
+
+    <script src="libs/p5.js"></script>
+    <script src="libs/xlibs.js"></script>
+    <script src="chat/usrader.js"></script>
+    <script src="addbyid/finder.js"></script>
+</head>
+
+<body>
+    <script>
+        var objs = []
+        var res = []
+        var ertext
+        var inwork = false
+
+        var ss = getCookie("ss")
+        var pp = getCookie("pp");
+        var ps = getCookie("ps")
+
+        let lgnstyle = document.createElement('style');
+        lgnstyle.innerHTML = `
+    input::placeholder {
+      color: var(--placeholder-color);
+      font-weight: bold;
+      opacity: 1; /* делаем его полностью видимым */
+    }
+  `;
+        document.head.appendChild(lgnstyle);
+
+        function setup() {
+            noCanvas(); // отключаем холст, если он не нужен
+            BackStyling()
+            input = createInput()
+            input.attribute('placeholder', 'Введите id или имя!');
+            input.elt.style.setProperty('--placeholder-color', '#cccccc')
+            ButtonStyling(input)
+            input.position(0, 0)
+            input.size(window.innerWidth - 5, 25)
+            input.input(() => {
+                if (!inwork) {
+                    num = objs.length - 1
+                    while (num > -1) {
+                        objs[num].remove()
+                        num--
+                    }
+                    let find = input.value()
+                    if (find.length > 3 && find.length < 11) {
+                        finder(find)
+                        ertext.html("Ничего не найдено")
+                    } else {
+                        ertext.html("Введите больше 3 симовлов но не больше 11")
+                    }
+                }
+
+
+            });
+            ertext = createP("Введите чтонибуть")
+            ertext.position(0, 20)
+            ertext.style('z-index', '-1');
+            ertext.style('position', 'absolute');
+            ButtonStyling(ertext)
+        }
+    </script>
+</body>
+
+</html>

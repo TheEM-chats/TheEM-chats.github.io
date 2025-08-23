@@ -21,9 +21,11 @@ function getProfUrl(pubk, element, type) {
     if (type == "basic") {
         urlp = "https://sebain.pythonanywhere.com/saveget?filename=" + pubk + "_img"
     }
+    InProcess++
     fetch(urlp)
         .then(response => response.text())
         .then(data => {
+            InProcess--
             data = Decrypt(data)
             console.log(data)
             if (data == "Файл не найден в save") {
@@ -34,15 +36,17 @@ function getProfUrl(pubk, element, type) {
             }
         })
         .catch(error => {
+            InProcess--
             element.style('background-image', 'url("https://i.ibb.co/F4qyF7RN/blank.png")')
         });
 }
 
 function load_chats(intGrt = false) {
-
-    fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_chats")
+    InProcess++
+    fetch("https://sebain.pythonanywhere.com/savestget?filename=" + ps + "_chats")
         .then(response => response.text())
         .then(data => {
+            InProcess--
             chatsJSON = data;
             console.log(chatsJSON) // выводим уже присвоенное значение
             let tchats = JSON.parse(chatsJSON)
@@ -76,9 +80,11 @@ function load_chats(intGrt = false) {
                 if (type != "basic") {
                     nameurl = "https://sebain.pythonanywhere.com/get?filename=" + tchats[xnum].chatid + "_profn"
                 }
+                InProcess++
                 fetch(nameurl)
                     .then(response => response.text())
                     .then(data => {
+                        InProcess--
                         let clr
                         let xid = tchats[xnum].chatid
                         let tbutton = createButton(data)
@@ -87,12 +93,12 @@ function load_chats(intGrt = false) {
                         tbutton.style('white-space', 'pre-wrap');
                         //tbutton.html("Текст")
                         tbutton.position(0, xpos)
-                        tbutton.size(window.innerWidth, 35)
+                        tbutton.size(window.innerWidth, 50)
                         tbutton.style('border-radius', '8px');
                         tbutton.style('text-align', 'left');
-                        tbutton.style('padding-left', '12px');
+                        tbutton.style('padding-left', '60px');
+                        ButtonStyling(tbutton)
                         if (intGrt) {
-                            tbutton.style('position', 'fixed');
                             tbutton.style('z-index', '30');
                         }
                         chatbuttons[xbtnum] = tbutton
@@ -122,9 +128,11 @@ function load_chats(intGrt = false) {
                         tbutton.style("border-width", "3px");
                         tbutton.style("border-color", "#00004d");
                         if (type == "basic") {
+                            InProcess++
                             fetch("https://sebain.pythonanywhere.com/saveget?filename=" + targ + "_last-online&text=" + Math.floor(Date.now() / 1000))
                                 .then(response => response.text())
                                 .then(data => {
+                                    InProcess--
                                     let dif1 = Math.floor(Date.now() / 1000) - data
                                     let dstate
                                     if (dif1 < 60) {
@@ -132,9 +140,12 @@ function load_chats(intGrt = false) {
                                         tbutton.style("border-color", "#009900");
                                     }
                                 })
-                                .catch(error => {});
+                                .catch(error => { InProcess-- });
                         }
                         let btn = createButton('');
+                        ButtonStyling(btn)
+                        btn.mouseOver(() => {});
+                        btn.mouseOut(() => {});
                         if (type == "basic") {
                             getProfUrl(tchats[xnum].target, btn, type)
                         } else {
@@ -142,39 +153,49 @@ function load_chats(intGrt = false) {
                         }
 
                         btn.style('background-size', 'cover');
-                        btn.position(window.innerWidth - 35, xpos)
+                        btn.position(3, xpos + 2)
+                        if (intGrt) {
+                            btn.style('z-index', '30');
+                        }
                         let pubk
                         if (type == "basic") {
                             pubk = tchats[xnum].target
                         } else {
                             pubk = tchats[xnum].chatid
                         }
+
                         btn.mousePressed(() => {
                             if (!intGrt) {
-                                overlay.style('background', 'rgba(0, 0, 0, 0.6)');
-                                overlay.style('z-index', '100');
+                                let scroll = window.scrollY
+                                window.scrollTo(0, 0);
+                                overlay.show()
                                 let fsimg = createButton('');
                                 fsimg.style('z-index', '101');
                                 getProfUrl(pubk, fsimg, type)
                                 fsimg.style('background-size', 'cover');
                                 fsimg.size(366, 366)
                                 fsimg.position(0, 0)
+                                fsimg.style('border-radius', '15px')
                                 fsimg.mousePressed(() => {
+                                    window.scrollTo(0, scroll);
                                     fsimg.remove()
-                                    overlay.style('background', '#ffffff');
-                                    overlay.style('z-index', '-100');
+                                    overlay.hide()
                                 });
                             }
                         });
-                        btn.size(35, 35)
+                        btn.size(45, 45)
                         chatimgs[xbtnum] = btn
+                        InProcess++
                         fetch("https://sebain.pythonanywhere.com/get?filename=chat_" + xid)
                             .then(response => response.text())
                             .then(data => {
+                                InProcess--
                                 let history_newJSON = data
+                                InProcess++
                                 fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_oldchat" + xid)
                                     .then(response => response.text())
                                     .then(data => {
+                                        InProcess--
                                         data = Decrypt(data)
                                         let history_oldJSON = data
                                         let new1 = JSON.parse(history_newJSON)
@@ -197,34 +218,53 @@ function load_chats(intGrt = false) {
                                         }
                                     })
                                     .catch(error => {
+                                        InProcess--
                                         console.error("Ошибка при получении данных:", error);
                                     });
 
                             })
                             .catch(error => {
+                                InProcess--
                                 console.error("Ошибка при получении данных:", error);
                             });
                         if (type == "basic") {
+                            InProcess++
                             fetch("https://sebain.pythonanywhere.com/saveget?filename=" + tchats[xnum].target + "_colour")
                                 .then(response => response.text())
                                 .then(data => {
+                                    InProcess--
                                     console.log(data)
                                     if (data == "Файл не найден в save") {
                                         console.log("Не получен цвет" + tchats[xnum].target)
                                     } else {
-                                        tbutton.style('background-color', "#" + data);
                                         clr = "#" + data
+                                            //"0 2px 6px rgba(" + hexToRGBValues("#" + data) + " , 0.15)"
+                                            //"rgba(" + hexToRGBValues("#" + data) + ", 0.18)"
+                                        tbutton.style('background', "rgba(" + hexToRGBValues("#" + data) + ", 0.36)");
+                                        tbutton.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#" + data) + " , 0.30)");
+
+                                        tbutton.mouseOver(() => {
+                                            tbutton.style('background', "rgba(" + hexToRGBValues("#" + data) + ", 0.50)");
+                                            tbutton.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#" + data) + " , 0.50)");
+                                        });
+
+                                        tbutton.mouseOut(() => {
+                                            tbutton.style('background', "rgba(" + hexToRGBValues("#" + data) + ", 0.36)");
+                                            tbutton.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#" + data) + " , 0.30)");
+                                        });
                                     }
                                 })
                                 .catch(error => {
+                                    InProcess--
                                     console.error(error)
                                 });
                         }
                     })
                     .catch(error => {
+                        InProcess--
                         console.error("Ошибка при получении данных:", error);
                     });
-                pos = pos + 33
+                pos = pos + 47
                 btnum++
                 num--
             }
@@ -235,13 +275,13 @@ function load_chats(intGrt = false) {
                 CommitUserListBTN.mousePressed(() => {
                     CommitUserListFunc(CommitUserListBTN, checked)
                 });
-                CommitUserListBTN.style('position', 'fixed');
                 CommitUserListBTN.style('z-index', '30');
             }
 
         })
         .catch(error => {
+            InProcess--
             console.error("Ошибка при получении данных:", error);
-            alert("У вас нет ни одного чата??? Так добавь своего друга по его ID, если уже добавил или хочешь добавить жми ОК")
+            xAlert("Добавьте чат по кнопке ниже!")
         });
 }

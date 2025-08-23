@@ -17,12 +17,16 @@
     <script>
         let group, channel
 
+        function xgotohome() {
+            window.location.href = "setts.html"
+        }
+
         function gotohome() {
-            window.location.href = "homepage.html";
-            alert("Создано! Успешно!")
+            xAlert("Создано! Успешно! Нажмите `ОК`, а затем на `Мои чаты`", xgotohome)
         }
 
         function setup() {
+            BackStyling()
             noCanvas(); // отключаем холст, если он не нужен
             window.addEventListener("resize", () => {
                 frame.size(window.innerWidth, window.innerHeight)
@@ -33,19 +37,29 @@
 
             group = createCheckbox('Группа', true);
             group.changed(handleChange);
+            ButtonStyling(group)
+            group.position(0, 0)
+            group.size(150, 25)
 
             channel = createCheckbox('Канал', false);
             channel.changed(handleChange);
-            channel.position(100, 9)
+            ButtonStyling(channel)
+            channel.position(150, 0)
+            channel.size(150, 25)
 
             let name = createInput("Новая группа/канал " + getRandomFromRange(1000, 9000))
             name.size(window.innerWidth - 25, 25)
+            ButtonStyling(name)
+            name.position(0, 25)
 
-            back = createButton("К списку чатов")
+            back = createButton("Назад")
             back.size(200, 25)
             back.mousePressed(() => {
-                window.location.href = "homepage.html";
+                window.location.href = "setts.html";
             });
+            ButtonStyling(back)
+            back.position(0, 50)
+            back.size(150, 25)
 
             submit = createButton("Создать")
             submit.size(200, 25)
@@ -53,6 +67,9 @@
                 submit.remove()
                 create(channel.checked(), name.value())
             });
+            submit.position(150, 50)
+            submit.size(150, 25)
+            ButtonStyling(submit)
 
 
             function create(isChannel, name) {

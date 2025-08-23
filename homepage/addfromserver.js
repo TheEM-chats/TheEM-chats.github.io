@@ -1,6 +1,6 @@
 function addfromserver() {
     function addchat(newchats) {
-        fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_chats")
+        fetch("https://sebain.pythonanywhere.com/savestget?filename=" + ps + "_chats")
             .then(response => response.text())
             .then(data => {
                 globalres = data
@@ -21,7 +21,7 @@ function addfromserver() {
                     .then(data => {
                         globalres = data; // вызываем только после получения данных
                         console.log(globalres); // выводим уже присвоенное значение
-                        window.location.href = "homepage.html";
+                        window.location.href = "chatlist.html";
                     })
                     .catch(error => {
                         console.error("Ошибка при получении данных:", error);
@@ -44,7 +44,7 @@ function addfromserver() {
                     .then(data => {
                         globalres = data; // вызываем только после получения данных
                         console.log(globalres); // выводим уже присвоенное значение
-                        window.location.href = "homepage.html";
+                        window.location.href = "chatlist.html";
                     })
                     .catch(error => {
                         console.error("Ошибка при получении данных:", error);
@@ -52,7 +52,7 @@ function addfromserver() {
             });
     }
     // Загружаем новые чаты
-    fetch("https://sebain.pythonanywhere.com/get?filename=newchats_" + pp)
+    fetch("https://sebain.pythonanywhere.com/mynewchats?ss=" + ss)
         .then(response => response.text())
         .then(data => {
             globalres = data; // вызываем только после получения данных
@@ -60,15 +60,6 @@ function addfromserver() {
             try {
                 let newchats = JSON.parse(globalres)
                 addchat(newchats)
-                fetch("https://sebain.pythonanywhere.com/set?filename=newchats_" + pp + "&text=voidblank1")
-                    .then(response => response.text())
-                    .then(data => {
-                        globalres = data; // вызываем только после получения данных
-                        console.log(globalres); // выводим уже присвоенное значение
-                    })
-                    .catch(error => {
-                        console.error("Ошибка при получении данных:", error);
-                    });
             } catch {
                 console.log("Если это не джсон то там ничё нет")
             }

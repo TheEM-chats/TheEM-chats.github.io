@@ -1,76 +1,86 @@
-function reg_func() {
-    let name = prompt("Как тебя зовут? (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)");
-    let login = prompt("Придумай логин, например:" + name + getRandomFromRange(1111, 9999) + " (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)");
-    let pass1 = prompt("Придумай и запомни пароль (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)");
-    let pass2 = prompt("Повтори пароль (Используйте только буковки, циферки, @ и . )(Другие симолы нельзя)")
-    let mail = "Ох великий суп наварили!"
+function reg_func(login, pass) {
+    let name = login
+    let pass1 = pass
+    let pass2 = pass
+    let mail = "Заглушка!"
     if (name === "" || login === "" || pass1 === "" || mail === "") {
         alert("Не все данные введены");
     } else {
         if (pass1 == pass2) {
-            let pp = String(getRandomFromRange(11111, 99999))
-            let ss = String(getRandomFromRange(11111, 99999))
-            let ps = String(pp) + String(ss)
+
             let globalcan = 0
-            fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_mail&text=" + mail)
+            InProcess = 6
+            fetch("https://sebain.pythonanywhere.com/generator")
                 .then(response => response.text())
                 .then(data => {
-                    globalres = data; // вызываем только после получения данных
-                    console.log(globalres);
-                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_profn&text=" + name)
+                    InProcess--
+                    data = JSON.parse(data)
+                    let pp = data.pp
+                    let ss = data.ss
+                    let ps = String(pp) + String(ss)
+                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_mail&text=" + mail)
                         .then(response => response.text())
                         .then(data => {
+                            InProcess--
                             globalres = data; // вызываем только после получения данных
                             console.log(globalres);
-                            fetch("https://sebain.pythonanywhere.com/set?filename=" + login + pass1 + pass2 + "_pp&text=" + pp)
+                            fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_profn&text=" + name)
                                 .then(response => response.text())
                                 .then(data => {
+                                    InProcess--
                                     globalres = data; // вызываем только после получения данных
                                     console.log(globalres);
-                                    fetch("https://sebain.pythonanywhere.com/set?filename=" + login + pass1 + pass2 + "_ss&text=" + ss)
+                                    fetch("https://sebain.pythonanywhere.com/set?filename=" + login + pass1 + pass2 + "_pp&text=" + pp)
                                         .then(response => response.text())
                                         .then(data => {
+                                            InProcess--
                                             globalres = data; // вызываем только после получения данных
                                             console.log(globalres);
-                                            fetch("https://sebain.pythonanywhere.com/set?filename=" + login + pass1 + pass2 + "_reg&text=yes")
+                                            fetch("https://sebain.pythonanywhere.com/set?filename=" + login + pass1 + pass2 + "_ss&text=" + ss)
                                                 .then(response => response.text())
                                                 .then(data => {
+                                                    InProcess--
                                                     globalres = data; // вызываем только после получения данных
-                                                    console.log(globalres); // выводим уже присвоенное значение
-                                                    setCookie2('pp', pp);
-                                                    setCookie2('ss', ss);
-                                                    setCookie2('ps', ps);
-                                                    setCookie2('IsReg', "1");
-                                                    alert("Успешно зарегестрировано")
-                                                    window.location.href = "index.html"; // выводим уже присвоенное значение
-                                                    globalcan = 1
+                                                    console.log(globalres);
+                                                    fetch("https://sebain.pythonanywhere.com/set?filename=" + login + pass1 + pass2 + "_reg&text=yes")
+                                                        .then(response => response.text())
+                                                        .then(data => {
+                                                            InProcess--
+                                                            globalres = data; // вызываем только после получения данных
+                                                            console.log(globalres); // выводим уже присвоенное значение
+                                                            setCookie2('pp', pp);
+                                                            setCookie2('ss', ss);
+                                                            setCookie2('ps', ps);
+                                                            setCookie2('IsReg', "1");
+                                                            xAlert("Успешно зарегистрировано!", gohome)
+                                                            globalcan = 1
+                                                        })
+                                                        .catch(error => {
+                                                            xAlert("Ошибка", rethis)
+                                                        });
+
                                                 })
                                                 .catch(error => {
-                                                    alert("Ошибка")
-                                                    window.location.href = "index.html";
-                                                });
-
+                                                    xAlert("Ошибка", rethis)
+                                                }); // выводим уже присвоенное значение
                                         })
                                         .catch(error => {
-                                            alert("Ошибка")
-                                            window.location.href = "index.html";
+                                            xAlert("Ошибка", rethis)
                                         }); // выводим уже присвоенное значение
                                 })
                                 .catch(error => {
-                                    alert("Ошибка")
-                                    window.location.href = "index.html";
+                                    xAlert("Ошибка", rethis)
                                 }); // выводим уже присвоенное значение
                         })
                         .catch(error => {
-                            alert("Ошибка")
-                            window.location.href = "index.html";
-                        }); // выводим уже присвоенное значение
+                            xAlert("Ошибка", rethis)
+
+                        });
                 })
                 .catch(error => {
-                    alert("Ошибка")
-                    window.location.href = "index.html";
-
+                    xAlert("Ошибка", rethis)
                 });
+
 
 
 

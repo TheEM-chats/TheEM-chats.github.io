@@ -159,8 +159,8 @@ function getRandomFromRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function shortenText(text) {
-    return text.length <= 50 ? text : text.slice(0, 50) + '..';
+function shortenText(text, count = 50) {
+    return text.length <= count ? text : text.slice(0, count) + '..';
 }
 
 function alerterr(text) {
@@ -174,3 +174,200 @@ function SoundEffect(filename) {
     const audio = new Audio(filename);
     audio.play();
 }
+
+function hexToRGBValues(hex) {
+    hex = hex.replace(/^#/, '');
+
+    let r = parseInt(hex.slice(0, 2), 16);
+    let g = parseInt(hex.slice(2, 4), 16);
+    let b = parseInt(hex.slice(4, 6), 16);
+
+    return `${r},${g},${b}`;
+}
+
+
+//Дизайн либы
+
+function ButtonStyling(btn) {
+    btn.style('color', '#ffffff');
+    btn.style('background', 'rgba(120, 160, 255, 0.18)'); // мягкий синий
+    btn.style('border', '1px solid rgba(255, 255, 255, 0.25)');
+    btn.style('border-radius', '999px'); // таблетка!
+    btn.style('backdrop-filter', 'blur(6px)');
+    btn.style('-webkit-backdrop-filter', 'blur(6px)');
+    btn.style('box-shadow', '0 2px 6px rgba(0, 0, 0, 0.15)');
+    btn.style('cursor', 'pointer');
+    btn.style('transition', 'all 0.2s ease');
+    btn.mouseOver(() => {
+        btn.style('background', 'rgba(140, 180, 255, 0.25)');
+        btn.style('box-shadow', '0 3px 10px rgba(0, 0, 0, 0.25)');
+    });
+
+    btn.mouseOut(() => {
+        btn.style('background', 'rgba(120, 160, 255, 0.18)');
+        btn.style('box-shadow', '0 2px 6px rgba(0, 0, 0, 0.15)');
+    });
+}
+
+function BackStyling() {
+    var lgnstyle = document.createElement('style');
+    lgnstyle.innerHTML = `
+    input::placeholder {
+      color: var(--placeholder-color);
+      font-weight: bold;
+      opacity: 1; /* делаем его полностью видимым */
+    }
+  `;
+    document.head.appendChild(lgnstyle);
+    document.body.style.backgroundImage = "url('back2.jpg')";
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.height = "100vh";
+    document.body.style.margin = "0";
+    document.body.style.display = "flex";
+    document.body.style.justifyContent = "center";
+    document.body.style.alignItems = "center";
+    //Анимация загрузки
+    let loader = createImg('loading.gif', 'загрузка');
+    loader.size(100, 35);
+    loader.position(0, 0)
+    loader.style('position', 'fixed');
+    loader.style('z-index', '9999');
+    let loadertext = createButton("")
+    loadertext.position(0, 35)
+    loadertext.style('position', 'fixed');
+    loadertext.style('z-index', '9999');
+    ButtonStyling(loadertext)
+    loadertext.mouseOver(() => {});
+    loadertext.mouseOut(() => {});
+    loadertext.style('cursor', 'default')
+    loader.hide()
+    loadertext.hide()
+    setInterval(() => {
+        if (InProcess > 0) {
+            loader.show()
+            loadertext.show()
+            loadertext.html(InProcess + " запросов")
+        } else {
+            loader.hide()
+            loadertext.hide()
+        }
+    }, 500)
+
+}
+
+var InProcess = 0
+
+
+var xAlert = function(text, callback = "ohno") {
+    let btn = createButton("");
+    ButtonStyling(btn);
+    btn.position((window.innerWidth - 250) / 2, (window.innerHeight - 100) / 2);
+    btn.size(250, 100);
+    btn.mouseOver(() => {});
+    btn.mouseOut(() => {});
+    btn.style('cursor', 'default')
+    btn.style('border-radius', '8px')
+    btn.style('z-index', '1001')
+    btn.style('position', 'absolute')
+    let btn21 = createButton("Ок");
+    ButtonStyling(btn21);
+    btn21.position((window.innerWidth + 140) / 2, (window.innerHeight + 60) / 2);
+    btn21.size(50, 12);
+    btn21.style('border-radius', '8px')
+    btn21.style('z-index', '1002')
+    btn21.style('position', 'absolute')
+    btn21.mousePressed(() => {
+        btn.remove()
+        btnP.remove()
+        btnX.remove()
+        btn21.remove()
+        try {
+            callback()
+        } catch {
+            console.log("Колбек не передан")
+        }
+    });
+    let btnP = createP(text)
+    btnP.position((window.innerWidth - 240) / 2, (window.innerHeight - 110) / 2)
+    btnP.size(250, 70)
+    btnP.style('z-index', '1003')
+    btnP.style('position', 'absolute')
+    btnP.style('color', '#ffffff')
+
+    let btnX = createButton("");
+    ButtonStyling(btnX);
+    btnX.position(0, 0)
+    btnX.size(window.innerWidth, window.innerHeight);
+    btnX.mouseOver(() => {});
+    btnX.mouseOut(() => {});
+    btnX.style('cursor', 'default')
+    btnX.style('border-radius', '8px')
+    btnX.style('z-index', '1000')
+    btnX.style('position', 'absolute')
+    btnX.style('background', 'rgba(120, 160, 255, 0)')
+
+};
+
+var xPrompt = function(text, callback = "ohno") {
+    let btn = createButton("");
+    ButtonStyling(btn);
+    btn.position((window.innerWidth - 250) / 2, (window.innerHeight - 100) / 2);
+    btn.size(250, 100);
+    btn.mouseOver(() => {});
+    btn.mouseOut(() => {});
+    btn.style('cursor', 'default')
+    btn.style('border-radius', '8px')
+    btn.style('z-index', '1001')
+    btn.style('position', 'absolute')
+    let btn21 = createButton("Ввод");
+    ButtonStyling(btn21);
+    btn21.position((window.innerWidth + 140) / 2, (window.innerHeight + 60) / 2);
+    btn21.size(50, 12);
+    btn21.style('border-radius', '8px')
+    btn21.style('z-index', '1002')
+    btn21.style('position', 'absolute')
+    btn21.mousePressed(() => {
+        btn.remove()
+        btnP.remove()
+        btnX.remove()
+        btn21.remove()
+        btnInput.remove()
+        if (btnInput.value() != "") {
+            try {
+                callback(btnInput.value())
+            } catch {
+                console.log("Колбек не передан")
+            }
+        }
+
+    });
+    let btnP = createP(text)
+    btnP.position((window.innerWidth - 240) / 2, (window.innerHeight - 110) / 2)
+    btnP.size(250, 70)
+    btnP.style('z-index', '1003')
+    btnP.style('position', 'absolute')
+    btnP.style('color', '#ffffff')
+
+    let btnX = createButton("");
+    ButtonStyling(btnX);
+    btnX.position(0, 0)
+    btnX.size(window.innerWidth, window.innerHeight);
+    btnX.mouseOver(() => {});
+    btnX.mouseOut(() => {});
+    btnX.style('cursor', 'default')
+    btnX.style('border-radius', '8px')
+    btnX.style('z-index', '1000')
+    btnX.style('position', 'absolute')
+    btnX.style('background', 'rgba(120, 160, 255, 0)')
+
+    btnInput = createInput()
+    btnInput.position(0, window.innerHeight / 3 * 2)
+    btnInput.size(window.innerWidth - 5, 25)
+    btnInput.style('z-index', '1003')
+    btnInput.style('position', 'absolute')
+    btnInput.attribute('placeholder', 'Ответ:');
+    btnInput.elt.style.setProperty('--placeholder-color', '#cccccc')
+    ButtonStyling(btnInput)
+
+};

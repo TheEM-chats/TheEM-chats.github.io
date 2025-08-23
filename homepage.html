@@ -1,217 +1,203 @@
 <!DOCTYPE html>
 <html lang="ru">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="manifest" href="/manifest.json">
+<style>
+    html,
+    body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+</style>
 
 <head>
     <meta charset="UTF-8" />
-    <title>TheEM - Список чатов</title>
+    <title>TheEM - Главная страница</title>
     <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
 
     <script src="libs/p5.js"></script>
     <script src="libs/xlibs.js"></script>
-    <script src="homepage/addbyid.js"></script>
-    <script src="homepage/load_chats.js"></script>
-    <script src="homepage/addfromserver.js"></script>
 </head>
 
 <body>
     <script>
-        let canreload = true
-        let myButton;
-        let ss = getCookie("ss")
-        let pp = getCookie("pp");
-        let ps = getCookie("ps")
-        let globalres = ""
-        let chatbuttons = []
-        let chatimgs = []
+        var state = 1
+        var last_state = state
+        var anim = "n"
+        var btn
+        var x = 0
+
+        let setts_frame
+        let chatlist_frame
+        let addbyid_frame
+        if (getCookie("IsReg") != "1") {
+            window.location.href = "index.html";
+        }
+
+        function hide(element) {
+            element.style('visibility', 'hidden')
+        }
+
+        function show(element) {
+            element.style('visibility', 'visible');
+        }
+
+        function hideall() {
+            hide(setts_frame)
+            hide(chatlist_frame)
+            hide(addbyid_frame)
+        }
+
+        function start() {
+            reload = createButton("↻")
+            ButtonStyling(reload)
+            reload.size(25, 25)
+            reload.position(window.innerWidth - 25 - 5, 5)
+            reload.style('position', 'fixed');
+            reload.style('z-index', '100');
+            reload.mousePressed(() => {
+                chatlist_frame.elt.contentWindow.location.reload()
+                addbyid_frame.elt.contentWindow.location.reload()
+                setts_frame.elt.contentWindow.location.reload()
+            });
+
+            chatlist = createButton("Мои чаты")
+            chatlist.style('color', '#ffffff');
+            chatlist.style('background', 'transparent');
+            chatlist.size(window.innerWidth / 3, 35)
+            chatlist.position(0, window.innerHeight - 35)
+            chatlist.style('border-radius', '5px')
+            chatlist.style('border', '2px solid #bbbbbb');
+            chatlist.mousePressed(() => {
+                x = 0
+                state = 1
+            });
+            addbyid = createButton("Добавить по id")
+            addbyid.style('color', '#ffffff');
+            addbyid.style('background', 'transparent');
+            addbyid.size(window.innerWidth / 3, 35)
+            addbyid.position(window.innerWidth / 3, window.innerHeight - 35)
+            addbyid.style('border-radius', '5px')
+            addbyid.style('border', '2px solid #bbbbbb');
+            addbyid.mousePressed(() => {
+                x = window.innerWidth / 3
+                state = 2
+            });
+            setts = createButton("Другое")
+            setts.style('color', '#ffffff');
+            setts.style('background', 'transparent');
+            setts.size(window.innerWidth / 3, 35)
+            setts.position(window.innerWidth / 3 * 2, window.innerHeight - 35)
+            setts.style('border-radius', '5px')
+            setts.style('border', '2px solid #bbbbbb');
+            setts.mousePressed(() => {
+                x = window.innerWidth / 3 * 2
+                state = 3
+            });
+            btn = createButton('')
+            ButtonStyling(btn)
+            btn.size(window.innerWidth / 3, 35)
+            btn.style('border-radius', '8px')
+            btn.style('z-index', '-1')
+            btn.style('position', 'absolute')
+            btn.style('background', 'rgba(0, 5, 150, 0.6)')
+            btn.style('box-shadow', '0 2px 6px rgba(0, 5, 150, 0.8)')
+            btn.mouseOver(() => {});
+            btn.mouseOut(() => {});
+            btn.style('cursor', 'default')
+
+        }
 
         function setup() {
-            overlay = createButton("")
-            overlay.position(0, 0);
-            overlay.size(windowWidth, windowHeight);
-            overlay.style('background', 'rgba(0, 0, 0, 0.6)');
-            overlay.style('position', 'fixed');
-            overlay.style('z-index', '100');
-            overlay.style('pointer-events', 'auto');
-            overlay.mousePressed(() => {
-                console.log("На оверлей тыкать низя!")
-            });
-            overlay.style('background', '#ffffff');
-            overlay.style('z-index', '-100');
+            noCanvas(); // отключаем холст, если он не нужен
+            BackStyling()
+                //start()
+            setts_frame = createElement('iframe');
+            setts_frame.attribute('src', 'setts.html');
+            setts_frame.size(window.innerWidth - 3, window.innerHeight - 35 - 3);
+            setts_frame.position(0, 0);
 
+            chatlist_frame = createElement('iframe');
+            chatlist_frame.attribute('src', 'chatlist.html');
+            chatlist_frame.size(window.innerWidth - 3, window.innerHeight - 35 - 3);
+            chatlist_frame.position(0, 0);
 
-            //            let picker
-            //            picker = createColorPicker('#ff0000'); // начальный цвет — красный
-            //            picker.position(10, 220);
-            setCookie2("chatid", "undefined")
-            setCookie2("name", "undefined")
-            if (getCookie("IsReg") != "1") {
-                window.location.href = "index.html";
-            }
+            addbyid_frame = createElement('iframe');
+            addbyid_frame.attribute('src', 'addbyid.html');
+            addbyid_frame.size(window.innerWidth - 3, window.innerHeight - 35 - 3);
+            addbyid_frame.position(0, 0);
+            hideall()
 
-            addfromserver()
-                //Инитиализация
-            window.addEventListener("resize", () => {
-                idtext.position(5, window.innerHeight - 125)
-                scradd.position(window.innerWidth - 155, window.innerHeight - 135)
-                setts.position(window.innerWidth - 84, 15)
-                overlay.size(windowWidth, windowHeight);
-                updates.position(window.innerWidth - 300, window.innerHeight - 75)
-                addbutton.position(window.innerWidth - 150, window.innerHeight - 75)
-                let num = chatbuttons.length - 1
-                while (num > -1) {
-                    let tbutton = chatbuttons[num]
-                    tbutton.size(window.innerWidth, 35)
-                    let itbutton = chatimgs[num]
-                    itbutton.position(window.innerWidth - 35, itbutton.position.y)
-                    itbutton.size(35, 35)
-                    num--
-
-                }
-            });
-            noCanvas()
-
-
-
-            //Загрузка чатов
-
-            load_chats()
-                //Ник
-            let mynik
-            console.log(getRandomBrightColor())
-            fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_colour")
+            //Начальное меню
+            InProcess++
+            fetch("https://sebain.pythonanywhere.com/saveget?filename=" + getCookie("pp") + "_profn")
                 .then(response => response.text())
                 .then(data => {
-                    let data5 = data
-                    console.log(data)
-                    if (data == "Файл не найден в save") {
-                        crush
-                    }
+                    InProcess--
+                    let hibutton = createButton("Привет," + data + "\n рады видеть вас тут!")
+                    hibutton.style('white-space', 'pre-wrap');
+                    ButtonStyling(hibutton)
+                    let get = createButton("<К моим чатам>")
+                    get.size(200, 25)
+                    get.position((window.innerWidth - 200) / 2, window.innerHeight / 3 * 2 - 75)
+                    ButtonStyling(get)
+                    get.style('background', 'rgba(100, 200, 150, 0.18)');
+                    get.style('box-shadow', '0 2px 6px rgba(0, 100, 50, 0.15)');
 
-                    fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_profn")
-                        .then(response => response.text())
-                        .then(data => {
-                            mynik = createP(data)
-                            mynik.style('background-color', "#" + data5);
-                        })
-                        .catch(error => {
-                            console.error("Ошибка при получении данных:", error);
-                            alert("Ошибка получения ника! Видно нет интернета!!!")
-                        });
+                    get.mouseOver(() => {
+                        get.style('background', 'rgba(120, 220, 170, 0.25)');
+                        get.style('box-shadow', '0 3px 10px rgba(0, 100, 50, 0.25)');
+                    });
 
-
+                    get.mouseOut(() => {
+                        get.style('background', 'rgba(100, 200, 150, 0.18)');
+                        get.style('box-shadow', '0 2px 6px rgba(0, 100, 50, 0.15)');
+                    });
+                    get.mousePressed(() => {
+                        get.remove()
+                        hibutton.remove()
+                        fsimgX.remove()
+                        start()
+                        show(chatlist_frame)
+                    });
+                    let fsimgX = createButton('');
+                    fsimgX.style('z-index', '101');
+                    fsimgX.size(128, 128)
+                    fsimgX.position((window.innerWidth - 128) / 2, window.innerHeight / 3 - window.innerHeight / 9)
+                    ButtonStyling(fsimgX)
+                    fsimgX.style('background-image', 'url("ico2.jpg")')
+                    fsimgX.style('background-size', 'cover');
+                    fsimgX.style('border-radius', '15px')
+                    fsimgX.mouseOver(() => {});
+                    fsimgX.mouseOut(() => {});
+                    BackStyling()
                 })
                 .catch(error => {
-                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_colour&text=" + getRandomBrightColor())
-                        .then(response => response.text())
-                        .then(data => {
-                            globalres = data; // вызываем только после получения данных
-                            console.log(globalres);
-                            window.location.href = "homepage.html"; // выводим уже присвоенное значение
-                        })
-                        .catch(error => {
-                            console.error("Ошибка при получении данных:", error);
-                            alert("Проверьте интернет!!! Он возможно ламатый у вас!")
-                        });
+                    InProcess--
                 });
-            // Таймер обновления
             setInterval(() => {
-                if (canreload) {
-                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_last-online&text=" + Math.floor(Date.now() / 1000))
-                        .then(response => response.text())
-                        .then(data => {
-                            window.location.href = "homepage.html"
-                        })
-                        .catch(error => {
-                            window.location.href = "homepage.html"
-                        });
-
+                console.log("Обновление")
+                btn.position(x, window.innerHeight - 35 - 3)
+                let currentURL = chatlist_frame.elt.contentWindow.location.href;
+                if (currentURL != "http://localhost:8000/chatlist.html" && currentURL != "https://theem-chats.github.io/chatlist.html") {
+                    window.location.href = "chat.html"
                 }
-            }, 25000);
-            // Остальное 
-            let updates = createButton("Список обновлений")
-            updates.style('background-color', '#ff9933');
-            updates.style('border-radius', '12px');
-            updates.position(window.innerWidth - 300, window.innerHeight - 75)
-            updates.mousePressed(() => {
-                window.location.href = "update.html";
-            });
-            let grouper = createButton("Новая группа/канал")
-            grouper.style('background-color', '#44ff13');
-            grouper.style('border-radius', '12px');
-            grouper.position(window.innerWidth - 100, window.innerHeight - 50)
-            grouper.mousePressed(() => {
-                window.location.href = "grouper.html";
-            });
-            updates.style('position', 'fixed');
-            updates.style('z-index', '101');
-            let setts = createButton("Настройки")
-            setts.style('background-color', '#cccccc');
-            setts.style('border-radius', '12px');
-            setts.position(window.innerWidth - 84, 15)
-            setts.mousePressed(() => {
-                window.location.href = "setts.html";
-            });
-            let scradd = createButton("Как установить наше приложение(всего 3 шага)")
-            scradd.style('background-color', '#cccccc');
-            scradd.style('border-radius', '12px');
-            scradd.position(window.innerWidth - 155, window.innerHeight - 135)
-            scradd.mousePressed(() => {
-                canreload = false
-                    // Картинка-фон
-                let thismg = createButton("");
-                thismg.parent(document.body);
-                thismg.style('position', 'fixed');
-                thismg.style('top', '0');
-                thismg.style('left', '0');
-                thismg.style('width', '100vw');
-                thismg.style('height', '100vh');
-                thismg.style('border', 'none');
-                thismg.style('z-index', '9999');
-                thismg.style('background-image', 'url("https://i.ibb.co/JwGpSP6k/how.jpg")');
-                thismg.style('background-size', 'contain'); // сохраняет пропорции картинки
-                thismg.style('background-position', 'center');
-                thismg.style('background-repeat', 'no-repeat');
-                thismg.style('background-color', '#000'); // на случай, если картинка не на весь экран
+                if (last_state != state) {
+                    last_state = state
+                    hideall()
+                    if (state == 1) {
+                        show(chatlist_frame)
+                    } else if (state == 2) {
+                        show(addbyid_frame)
+                        chatlist_frame.elt.contentWindow.location.reload();
+                    } else if (state == 3) {
+                        show(setts_frame)
+                        chatlist_frame.elt.contentWindow.location.reload();
+                    }
+                }
+            }, 200);
 
-                // Кнопка закрытия — в левом верхнем углу
-                let cbtn = createButton("✕");
-                cbtn.parent(document.body);
-                cbtn.style('position', 'fixed');
-                cbtn.style('top', '15px');
-                cbtn.style('left', '15px');
-                cbtn.style('z-index', '10000');
-                cbtn.style('padding', '10px 15px');
-                cbtn.style('font-size', '18px');
-                cbtn.style('background', '#fff');
-                cbtn.style('border', '1px solid #000');
-                cbtn.style('border-radius', '5px');
-                cbtn.style('cursor', 'pointer');
-
-                // Закрытие картинки и кнопки
-                cbtn.mousePressed(() => {
-                    thismg.remove();
-                    cbtn.remove();
-                    canreload = true
-                });
-            });
-            scradd.style('position', 'fixed');
-            scradd.style('z-index', '101');
-            let idtext = createP("Ваш id:" + pp)
-            idtext.position(5, window.innerHeight - 125)
-            idtext.style('position', 'fixed');
-            idtext.style('z-index', '101');
-            idtext.style('background-color', "#ffffff");
-            let addbutton = createButton("Добавить по ID")
-            addbutton.style('background-color', '#339933');
-            addbutton.style('border-radius', '12px');
-            addbutton.position(window.innerWidth - 150, window.innerHeight - 75)
-            addbutton.mousePressed(() => {
-                addbyid()
-            });
-            addbutton.style('position', 'fixed');
-            addbutton.style('z-index', '101');
         }
     </script>
     <!-- start webpushr code -->
@@ -241,6 +227,11 @@
         });
     </script>
     <!-- end webpushr code -->
+    <script>
+        if (typeof navigator.serviceWorker !== 'undefined') {
+            navigator.serviceWorker.register('webpushr-sw.js')
+        }
+    </script>
 </body>
 
 </html>

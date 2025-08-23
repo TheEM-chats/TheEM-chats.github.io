@@ -179,15 +179,15 @@ function isbanned(id) {
     return false
 }
 
-function pretty(btn) {
-    btn.style('background-color', '#33adff'); // фон кнопки
-    btn.style('border-radius', '24px');
+function pretty(btn, color = '#33adff') {
+    superstyler(btn, color)
+        //btn.style('background-color', '#33adff'); // фон кнопки
+    btn.style('border-radius', '999px');
     btn.style('z-index', '10');
 }
 
 function listext() {
-    overlay.style('background', '#ffffff');
-    overlay.style('z-index', '-100');
+    overlay.hide()
     listExit.remove()
     listAdd.remove()
     try {
@@ -206,8 +206,7 @@ function listext() {
 
 function listrender() {
     console.log("Отображаем список учаников!")
-    overlay.style('background', 'rgba(0, 0, 0, 0.6)');
-    overlay.style('z-index', '5');
+    overlay.show()
     listExit = createButton("Назад <<< <<< <<<")
     listExit.position(0, 0)
     listExit.size(window.innerWidth, 40)
@@ -285,6 +284,7 @@ function listrender() {
                     xp.position(0, xpos)
                     xp.style('background-color', '#33adff');
                     xp.style('z-index', '10');
+                    ButtonStyling(xp)
                     listObjs.push(xp)
                     if (level > 1 && ids[xnum] != data[0]) {
                         let muted = false
@@ -292,9 +292,11 @@ function listrender() {
                             muted = true
                             listMute = createButton("Размут")
                             listMute.style('background-color', '#00cc99')
+                            pretty(listMute, '#00cc99')
                         } else {
                             listMute = createButton("Мут")
                             listMute.style('background-color', '#ff66cc')
+                            pretty(listMute, '#ff66cc')
                         }
 
 
@@ -320,13 +322,14 @@ function listrender() {
                             listBan.mousePressed(() => {
                                 ban(ids[xnum])
                             });
+                            pretty(listBan, '#ff3300')
                         }
 
 
 
 
                     }
-                    pos = pos + 20
+                    pos = pos + 22
                 }
                 num--
 
@@ -459,8 +462,7 @@ function listrender() {
             listAdd.position(0, pos + 70)
             listAdd.mousePressed(() => {
                 listext()
-                overlay.style('background', 'rgba(0, 0, 0, 0.6)');
-                overlay.style('z-index', '5');
+                overlay.show()
                 load_chats(true)
             });
             listObjs.push(listAdd)

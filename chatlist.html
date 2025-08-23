@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    * {
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+        /* IE 10+ */
+    }
+    
+    *::-webkit-scrollbar {
+        display: none;
+        /* Chrome, Safari */
+    }
+</style>
+
+<link rel="icon" href="/favicon.png" type="image/png">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TheEM - Список чатов</title>
+    <!-- Подключаем библиотеку p5.js и расширение p5.dom -->
+
+    <script src="libs/p5.js"></script>
+    <script src="libs/xlibs.js"></script>
+    <script src="homepage/load_chats.js"></script>
+    <script src="homepage/addfromserver.js"></script>
+</head>
+
+<body>
+    <script>
+        let canreload = true
+        let myButton;
+        let ss = getCookie("ss")
+        let pp = getCookie("pp");
+        let ps = getCookie("ps")
+        let globalres = ""
+        let chatbuttons = []
+        let chatimgs = []
+
+
+        function setup() {
+            overlay = createButton("")
+            overlay.position(0, 0);
+            overlay.size(windowWidth, windowHeight);
+            overlay.style('background', 'rgba(0, 0, 0, 0.6)');
+            overlay.style('position', 'fixed');
+            overlay.style('z-index', '100');
+            overlay.style('pointer-events', 'auto');
+            overlay.mousePressed(() => {
+                console.log("На оверлей тыкать низя!")
+            });
+            overlay.style('background', 'rgba(0, 0, 0, 0.6)');
+            overlay.style('z-index', '100');
+            overlay.hide()
+
+
+            //            let picker
+            //            picker = createColorPicker('#ff0000'); // начальный цвет — красный
+            //            picker.position(10, 220);
+            setCookie2("chatid", "undefined")
+            setCookie2("name", "undefined")
+            if (getCookie("IsReg") != "1") {
+                window.location.href = "index.html";
+            }
+
+            addfromserver()
+                //Инитиализация
+            noCanvas()
+                //Обновление статуса в сети
+            setInterval(() => {
+                if (canreload) {
+                    InProcess++
+                    fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_last-online&text=" + Math.floor(Date.now() / 1000))
+                        .then(response => response.text())
+                        .then(data => {
+                            InProcess--
+                        })
+                        .catch(error => {
+                            InProcess--
+                        });
+
+                }
+            }, 25000);
+            fetch("https://sebain.pythonanywhere.com/saveset?filename=" + ps + "_last-online&text=" + Math.floor(Date.now() / 1000))
+                .then(response => response.text())
+                .then(data => {
+                    InProcess--
+                })
+                .catch(error => {
+                    InProcess--
+                });
+            //Загрузка чатов
+            load_chats()
+                // Остальное 
+            let idtext = createP("Ваш id:" + pp)
+            ButtonStyling(idtext)
+            idtext.position(0, 38)
+            idtext.size(window.innerWidth / 2 - 32, 18)
+            let fsimgX = createButton('');
+            fsimgX.style('z-index', '101');
+            fsimgX.size(64, 64)
+            fsimgX.position((window.innerWidth - 64) / 2, 0)
+            ButtonStyling(fsimgX)
+            fsimgX.style('background-image', 'url("ico2.jpg")')
+            fsimgX.style('background-size', 'cover');
+            fsimgX.style('border-radius', '15px')
+            fsimgX.mouseOver(() => {});
+            fsimgX.mouseOut(() => {});
+            BackStyling()
+        }
+    </script>
+</body>
+
+</html>

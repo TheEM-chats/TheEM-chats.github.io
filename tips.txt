@@ -360,4 +360,14 @@ chatid (id) он и там и там
 /rempass?filename=data.txt&pass=mainpass&2pass=newsecret456
 /get?filename=data.txt&pass=newsecret456
 
+/////////////////////////
+
+ButtonStyling(btn)
+BackStyling()
+
+xbtn = createButton("")
+xbtn.style('background', 'transparent');
+xbtn.size(200, 200)
+xbtn.style('border-radius', '5px')
+xbtn.style('border', '2px solid #bbbbbb'); 
 

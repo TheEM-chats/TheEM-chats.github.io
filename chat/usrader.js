@@ -1,63 +1,33 @@
 function addbyid(addid, chatid, target, callback = "no") {
-    if (true) {
-        fetch("https://sebain.pythonanywhere.com/saveget?filename=" + addid + "_profn")
-            .then(response => response.text())
-            .then(data => { // вызываем только после получения данных
+    InProcess++
+    fetch("https://sebain.pythonanywhere.com/saveget?filename=" + addid + "_profn")
+        .then(response => response.text())
+        .then(data => { // вызываем только после получения данных
+            InProcess--
+            console.log(data);
+            if (data == "Файл не найден в save") {
+                xAlert("НЕВЕРНЫЙ ID")
+            }
+            InProcess++
+            fetch("https://sebain.pythonanywhere.com/addnewchat?myss=" + ss + "&itpp=" + addid + "&target=" + target + "&chatid=" + chatid)
+                .then(response => response.text())
+                .then(data => {
+                    InProcess--
+                    try {
+                        callback()
+                    } catch {
+                        console.log("Не удалось вызвать колбек")
+                    }
+                })
+                .catch(error => {
+                    InProcess--
+                    xAlert("Произошла ошибка" + error)
+                }); // выводим уже присвоенное значение
+        })
+        .catch(error => {
+            InProcess--
+            console.error("Ошибка при получении данных:", error);
+            xAlert("Не верный ID")
+        });
 
-                console.log(data);
-                if (data == "Файл не найден в save") {
-                    alert("НЕВЕРНЫЙ ID")
-                    window.href.location = "homepage.html"
-                }
-
-                function sent(chats, addid, chatid) {
-                    chats.push({
-                        target: target,
-                        chatid: chatid
-                    });
-
-                    let targetJSON = JSON.stringify(chats)
-                    fetch("https://sebain.pythonanywhere.com/set?filename=newchats_" + addid + "&text=" + targetJSON)
-                        .then(response => response.text())
-                        .then(data => {
-                            console.log("Пытаемя вызвать колбек")
-                            try {
-                                callback()
-                            } catch {
-                                console.log("Не удалось вызвать колбек!")
-                            }
-                        })
-                        .catch(error => {
-                            alert("АЛЁЁЁЁ, ВСЁ СЛАМАЛАСЯ")
-                        });
-
-                }
-                fetch("https://sebain.pythonanywhere.com/get?filename=newchats_" + addid)
-                    .then(response => response.text())
-                    .then(data => {
-                        globalres = data;
-                        try {
-                            let chats = JSON.parse(globalres)
-                            sent(chats, addid, chatid)
-                        } catch {
-                            console.log(error);
-                            let chats = []
-                            sent(chats, addid, chatid)
-
-                        } // выводим уже присвоенное значение
-                    })
-                    .catch(error => {
-                        console.log(error)
-                        let chats = []
-                        sent(chats, addid, chatid)
-                    }); // выводим уже присвоенное значение
-            })
-            .catch(error => {
-                console.error("Ошибка при получении данных:", error);
-                alert("Не верный ID")
-                window.location.href = "homepage.html";
-            });
-    } else {
-        alert("Не верный Id")
-    }
 }

@@ -1,3 +1,28 @@
+function superstyler(btn, color, needchanges = true) {
+    btn.style('color', '#ffffff');
+    btn.style('background', 'rgba(120, 160, 255, 0.18)'); // мягкий синий
+    btn.style('border', '1px solid rgba(255, 255, 255, 0.25)');
+    btn.style('backdrop-filter', 'blur(6px)');
+    btn.style('-webkit-backdrop-filter', 'blur(6px)');
+    btn.style('box-shadow', '0 2px 6px rgba(0, 0, 0, 0.15)');
+    btn.style('cursor', 'pointer');
+    btn.style('transition', 'all 0.2s ease');
+    btn.style('background', "rgba(" + hexToRGBValues(color) + ", 0.36)");
+    btn.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues(color) + " , 0.30)");
+    if (needchanges) {
+        btn.mouseOver(() => {
+            btn.style('background', "rgba(" + hexToRGBValues(color) + ", 0.50)");
+            btn.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues(color) + " , 0.50)");
+        });
+
+        btn.mouseOut(() => {
+            btn.style('background', "rgba(" + hexToRGBValues(color) + ", 0.36)");
+            btn.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues(color) + " , 0.30)");
+        });
+    }
+}
+
+
 function cleanCalls(array) {
     const callIndexes = array
         .map((item, index) => item.type === 'call' ? index : -1)
@@ -90,6 +115,7 @@ function render() {
             objs[num].style('text-align', 'left');
             objs[num].style('background-color', colour); // фон кнопки
             objs[num].style('border-radius', '12px');
+            superstyler(objs[num], colour)
 
             container.child(objs[num]);
             let mynum = num
@@ -118,17 +144,19 @@ function render() {
             objs[num].style('text-align', 'left');
             objs[num].style('background-color', colour); // фон кнопки
             objs[num].style('border-radius', '12px');
-            objs[num].style('background-image', `url("${file}")`);
             objs[num].style('align-self', 'flex-start');
             objs[num].style('flex', 'none');
+            superstyler(objs[num], colour, false)
+            objs[num].style('background-image', `url("${file}")`);
             objs[num].style('background-repeat', 'no-repeat');
             objs[num].style('background-size', 'calc(100% - 10px)'); // ⬅️ уменьшить высоту
             objs[num].style('background-position', 'center 20px'); // ⬅️ отступ сверху
             container.child(objs[num]);
             objs[num].size(256, 256)
-            let p = createP(time + "\n" + autor);
+            let p = createP(time + "\n" + shortenText(autor, 5));
             let pos = objs[num].position();
-            p.position(pos.x + 10, pos.y - 10);
+            p.position(pos.x + 10, pos.y - 13);
+            p.style('color', '#ffffff');
             container.child(p);
             adds[num] = p
 
@@ -161,7 +189,7 @@ function render() {
             objs[num].style('white-space', 'pre-wrap');
             objs[num].style('text-align', 'left');
             objs[num].style('background-color', colour); // фон кнопки
-
+            superstyler(objs[num], colour)
             container.child(objs[num]);
             let mynum = num
             objs[num].mousePressed(() => {
@@ -178,7 +206,7 @@ function render() {
             objs[num].style('text-align', 'left');
             objs[num].style('background-color', colour); // фон кнопки
             objs[num].size(300, 50)
-
+            superstyler(objs[num], colour)
             container.child(objs[num]);
             let mynum = num
             objs[num].mousePressed(() => {

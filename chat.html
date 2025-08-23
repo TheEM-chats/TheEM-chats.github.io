@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="ru">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    #myContainer {
+        overflow-y: scroll;
+        height: 300px;
+    }
+    
+    #myContainer::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    #myContainer::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    #myContainer::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
+</style>
 
 <head>
     <meta charset="UTF-8" />
@@ -19,7 +38,9 @@
 
 <body>
     <script>
-        let ss = getCookie("ss")
+        let inputBIG = false
+
+        var ss = getCookie("ss")
         var pp = getCookie("pp");
         let ps = getCookie("ps")
         let target = getCookie("target")
@@ -81,8 +102,11 @@
         }
 
         function setup() {
-            //Проверка уровня 3 - Гл Админ | 2 - Модер | 1 - Учасник | 0 - Это обычный чат
+            BackStyling()
+                //Проверка уровня 3 - Гл Админ | 2 - Модер | 1 - Учасник | 0 - Это обычный чат
             statusButton = createButton("Загрузка статуса {[ТЫК ДЛЯ БОЛЬШЕГО]}")
+            ButtonStyling(statusButton)
+            statusButton.style('border-radius', '7px')
             statusButton.position(0, 38)
             statusButton.size(window.innerWidth - 80, 20)
             statusButton.mousePressed(() => {
@@ -184,7 +208,7 @@
             overlay.size(windowWidth, windowHeight);
             overlay.style('background', 'rgba(0, 0, 0, 0.6)');
             overlay.style('position', 'fixed');
-            overlay.style('z-index', '100');
+            overlay.style('z-index', '5');
             overlay.style('pointer-events', 'auto');
             overlay.mousePressed(() => {
                 console.log("На оверлей тыкать низя!")
@@ -194,8 +218,7 @@
             }
 
 
-            overlay.style('background', '#ffffff');
-            overlay.style('z-index', '-100');
+            overlay.hide()
             setInterval(() => {
                 timer1++
                 if (timer1 == 16) {
@@ -490,18 +513,6 @@
             }
 
 
-            window.addEventListener("resize", () => {
-                statusButton.size(window.innerWidth - 80, 20)
-                name.size(window.innerWidth - 135, 40)
-                fileS.position(window.innerWidth - 90, window.innerHeight - 56)
-                ban.position(window.innerWidth - 80, 0)
-                send.position(window.innerWidth - 90, window.innerHeight - 30)
-                input.position(0, window.innerHeight - 30)
-                input.size(window.innerWidth - 97, 20)
-                container.size(window.innerWidth - 45, window.innerHeight - 100)
-                overlay.size(windowWidth, windowHeight);
-                call.position(window.innerWidth - 80, 40)
-            });
             syssent = function(message) {
                 input.value("")
                 history.push({
@@ -666,7 +677,8 @@
                 }
             }, 7000)
             container = createDiv();
-            container.id("chat-container"); // дадим ID для удобства
+            container.id('myContainer')
+                //container.id("chat-container"); // дадим ID для удобства
             container.style('display', 'flex');
             container.style('flex-direction', 'column');
             container.style('gap', '10px');
@@ -675,21 +687,37 @@
             container.size(window.innerWidth - 45, window.innerHeight - 100)
             container.position(0, 57)
             let exit = createButton("Выход")
+            ButtonStyling(exit)
+            exit.style('border-radius', '10px')
             exit.mousePressed(() => {
                 window.location.href = "homepage.html"
 
             });
             exit.position(0, 0)
-            exit.size(60, 40)
+            exit.size(60, 37)
             let name = createP(getCookie("name"))
-            name.style('background-color', getCookie("colour"));
-            name.position(55, -15)
-            name.size(window.innerWidth - 135, 40)
+            name.style('border-radius', '10px')
+            ButtonStyling(name)
+            name.style('background', "rgba(" + hexToRGBValues(getCookie("colour")) + ", 0.36)");
+            name.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues(getCookie("colour")) + " , 0.30)");
+
+            name.mouseOver(() => {
+                name.style('background', "rgba(" + hexToRGBValues(getCookie("colour")) + ", 0.50)");
+                name.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues(getCookie("colour")) + " , 0.50)");
+            });
+
+            name.mouseOut(() => {
+                name.style('background', "rgba(" + hexToRGBValues(getCookie("colour")) + ", 0.36)");
+                name.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues(getCookie("colour")) + " , 0.30)");
+            });
+            //name.style('background-color', );
+            name.position(60, -15)
+            name.size(window.innerWidth - 142, 35)
             reloadOnline()
             let ban = createButton("Удалить!")
 
             function banrem(state) {
-                fetch("https://sebain.pythonanywhere.com/saveget?filename=" + pp + "_chats")
+                fetch("https://sebain.pythonanywhere.com/savestget?filename=" + ps + "_chats")
                     .then(response => response.text())
                     .then(data => {
                         let list = JSON.parse(data);
@@ -770,11 +798,15 @@
                     banrem(true)
                 }
             })
+            ButtonStyling(ban)
+            ban.style('border-radius', '10px')
             ban.position(window.innerWidth - 80, 0)
-            ban.size(77, 40)
+            ban.size(77, 37)
             let call = createButton("Созвон")
-            call.position(window.innerWidth - 80, 40)
-            call.size(77, 18)
+            ButtonStyling(call)
+            call.style('border-radius', '7px')
+            call.position(window.innerWidth - 80, 38)
+            call.size(77, 20)
             call.mousePressed(() => {
                 if (history[history.length - 1].type != "call") {
                     joiningcall = getRandomFromRange(11111, 99999)
@@ -796,21 +828,115 @@
                 setCookie2("callid", joiningcall)
                 window.location.href = "call.html"
             }
-            let input = createInput()
+
+            function biggerINPUT() {
+                if (inputBIG && input.value().length < 16) {
+                    inputBIG = false
+                    let oldtext = input.value()
+                    input.remove();
+                    input = createInput(oldtext)
+                    ButtonStyling(input)
+                    input.attribute('placeholder', 'Введите текст...');
+                    input.style('font-size', '16px');
+                    input.position(15, window.innerHeight - 40)
+                    input.size(window.innerWidth - 45, 30)
+                    input.style('background', "rgba(" + hexToRGBValues("#000000") + ", 0.66)");
+                    input.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#000000") + " , 0.60)");
+                    input.mouseOver(() => {});
+                    input.mouseOut(() => {});
+                    input.style('border-radius', '8px')
+                    input.input(biggerINPUT)
+                    input.elt.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            console.log('Enter нажат: ' + input.value());
+                            sent(input.value())
+
+                        }
+                    });
+                    input.elt.focus()
+                    input.elt.setSelectionRange(15, 15)
+                } else if (!inputBIG && input.value().length > 15) {
+                    let currentText = input.value();
+
+                    input.remove();
+
+                    input = createElement('textarea', currentText);
+                    ButtonStyling(input)
+                    input.attribute('placeholder', 'Введите текст...');
+                    input.style('font-size', '12px');
+                    input.position(15, window.innerHeight - 120)
+                    input.size(window.innerWidth - 45, 75)
+                    input.style('background', "rgba(" + hexToRGBValues("#000000") + ", 0.66)");
+                    input.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#000000") + " , 0.60)");
+                    input.mouseOver(() => {});
+                    input.mouseOut(() => {});
+                    input.style('border-radius', '8px')
+                    inputBIG = true
+                    input.input(biggerINPUT)
+                    input.elt.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            console.log('Enter нажат: ' + input.value());
+                            sent(input.value())
+
+                        }
+                    });
+                    input.elt.focus()
+                    input.elt.setSelectionRange(16, 16)
+                }
+            }
+            //Начало над полевводные кнопки и инпут
+            var input = createInput()
+            ButtonStyling(input)
             input.attribute('placeholder', 'Введите текст...');
-            input.style('font-size', '12px');
-            input.position(0, window.innerHeight - 30)
-            input.size(window.innerWidth - 97, 20)
-            let send = createButton("Отправить")
-            send.position(window.innerWidth - 90, window.innerHeight - 30)
-            send.size(75, 25)
-            let fileS = createButton("Вложить")
-            fileS.position(window.innerWidth - 90, window.innerHeight - 56)
-            fileS.size(75, 27)
+            input.style('font-size', '16px');
+            input.position(15, window.innerHeight - 40)
+            input.size(window.innerWidth - 45, 30)
+            input.style('background', "rgba(" + hexToRGBValues("#000000") + ", 0.66)");
+            input.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#000000") + " , 0.60)");
+            input.mouseOver(() => {});
+            input.mouseOut(() => {});
+            input.style('border-radius', '8px')
+            input.input(biggerINPUT)
+            input.elt.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    console.log('Enter нажат: ' + input.value());
+                    sent(input.value())
+
+                }
+            });
+            //Конец инпута
+            let send = createButton("")
+            ButtonStyling(send)
+            send.position(window.innerWidth - 65, window.innerHeight - 40)
+            send.size(40, 34)
+            send.style('border-radius', '8px')
+            send.style('position', 'fixed');
+            send.style('z-index', '1');
+            let sendP = createP("📨")
+            sendP.position(window.innerWidth - 61, window.innerHeight - 70)
+            sendP.size(40, 34)
+            sendP.style('pointer-events', 'none')
+            sendP.style('font-size', '24px')
+            sendP.style('position', 'fixed');
+            sendP.style('z-index', '2');
+            let fileS = createButton("")
+            ButtonStyling(fileS)
+            fileS.position(window.innerWidth - 105, window.innerHeight - 40)
+            fileS.size(40, 34)
+            fileS.style('border-radius', '8px')
             fileS.mousePressed(() => {
                 vlog()
             });
-
+            fileS.style('position', 'fixed');
+            fileS.style('z-index', '1');
+            let fileSP = createP("📎")
+            fileSP.position(window.innerWidth - 101, window.innerHeight - 63)
+            fileSP.size(40, 34)
+            fileSP.style('pointer-events', 'none')
+            fileSP.style('font-size', '24px')
+            fileSP.style('position', 'fixed');
+            fileSP.style('z-index', '2');
+            //Конец над полевводные кнопки
             function getTextLength(text) {
                 return text.length;
             }
@@ -848,18 +974,41 @@
                 }
             }
 
-            input.elt.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    console.log('Enter нажат: ' + input.value());
-                    sent(input.value())
 
-                }
-            });
             send.mousePressed(() => {
                 sent(input.value())
+                input.value("")
+                biggerINPUT()
             });
         }
     </script>
+    <!-- start webpushr code -->
+    <script>
+        function _webpushrScriptReady() {
+            console.log(getCookie("ss"))
+            webpushr('attributes', {
+                "key1": "value",
+                'user_id': getCookie("ss")
+            });
+        }
+        (function(w, d, s, id) {
+            if (typeof(w.webpushr) !== 'undefined') return;
+            w.webpushr = w.webpushr || function() {
+                (w.webpushr.q = w.webpushr.q || []).push(arguments)
+            };
+            var js, fjs = d.getElementsByTagName(s)[0];
+            js = d.createElement(s);
+            js.id = id;
+            js.async = 1;
+            js.src = "https://cdn.webpushr.com/app.min.js";
+            fjs.parentNode.appendChild(js);
+        }(window, document, 'script', 'webpushr-jssdk'));
+        webpushr('setup', {
+            'key': 'BFLe_7o4MjpBAJQqK9Zue9crqf0lRfNO6uipfd0w9HRPbZzy0QBIxTXezp_XTPdpXV_dvyDr6GjhTVZpvYlxiUc',
+            'user_id': getCookie("ss")
+        });
+    </script>
+    <!-- end webpushr code -->
 </body>
 
 </html>

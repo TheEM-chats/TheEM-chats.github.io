@@ -1,0 +1,22 @@
+{
+    "name": "Зем чаты, тот самый мессенджер",
+    "short_name": "Зем чаты",
+    "description": "Зем чаты это новый мессенджер 26 года",
+    "start_url": "/index.html",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#3367D6",
+    "orientation": "portrait-primary",
+    "icons": [{
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

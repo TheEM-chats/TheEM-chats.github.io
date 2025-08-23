@@ -24,6 +24,7 @@
         let frame;
 
         function setup() {
+            BackStyling()
             noCanvas(); // отключаем холст, если он не нужен
             window.addEventListener("resize", () => {
                 frame.size(window.innerWidth, window.innerHeight)
@@ -64,10 +65,12 @@
             });
             input.position(90, 0)
             input.size(window.innerWidth - 170, 15)
+            ButtonStyling(input)
             let send = createButton("Перейти")
             send.mousePressed(() => {
                 gourl(input.value())
             });
+            ButtonStyling(send)
             send.position(window.innerWidth - 80, 0)
             gourl(getCookie("safeurl"))
             let ext = createButton("Назад")
@@ -76,13 +79,16 @@
             ext.mousePressed(() => {
                 window.location.href = "chat.html"
             });
+            ButtonStyling(ext)
             let opn = createButton("Открыть так")
             opn.position(0, 20)
             opn.mousePressed(() => {
                 window.location.href = input.value()
             });
+            ButtonStyling(opn)
             let tip = createP("Если не загружается, нажмите `Открыть так`, но лучше этого не делать")
             tip.position(90, 5)
+            ButtonStyling(tip)
         }
     </script>
 </body>
