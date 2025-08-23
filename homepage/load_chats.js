@@ -52,11 +52,12 @@ function load_chats(intGrt = false) {
             let tchats = JSON.parse(chatsJSON)
             tchats = filterUniqueByChatId(tchats)
             if (!intGrt) {
-                tchats.unshift({
+                tchats.push({
                     target: "note",
                     chatid: "notes_" + ps
                 });
             }
+            console.log(tchats)
             let num = tchats.length - 1
             let btnum = 0
             let pos = 75
@@ -99,13 +100,14 @@ function load_chats(intGrt = false) {
                     .then(response => response.text())
                     .then(data => {
                         InProcess--
+                        if (tchats[xnum].target == "note") {
+                            data = "Заметки"
+                        }
                         let clr
                         let xid = tchats[xnum].chatid
                         let tbutton = createButton(data)
                         let xdata = data
-                        if (type == "note") {
-                            xdata = "Заметки"
-                        }
+
                         let targ = tchats[xnum].target
                         tbutton.style('white-space', 'pre-wrap');
                         //tbutton.html("Текст")
@@ -163,11 +165,16 @@ function load_chats(intGrt = false) {
                         ButtonStyling(btn)
                         btn.mouseOver(() => {});
                         btn.mouseOut(() => {});
-                        if (type == "basic") {
-                            getProfUrl(tchats[xnum].target, btn, type)
+                        if (tchats[xnum].target != "note") {
+                            if (type == "basic") {
+                                getProfUrl(tchats[xnum].target, btn, type)
+                            } else {
+                                getProfUrl(tchats[xnum].chatid, btn, type)
+                            }
                         } else {
-                            getProfUrl(tchats[xnum].chatid, btn, type)
+                            btn.style('background-image', 'url("https://i.ibb.co/ZpY2bgP4/2829971.png")')
                         }
+
 
                         btn.style('background-size', 'cover');
                         btn.position(3, xpos + 2)
@@ -182,7 +189,7 @@ function load_chats(intGrt = false) {
                         }
 
                         btn.mousePressed(() => {
-                            if (!intGrt) {
+                            if (!intGrt && tchats[xnum].target != "note") {
                                 let scroll = window.scrollY
                                 window.scrollTo(0, 0);
                                 overlay.show()

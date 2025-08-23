@@ -46,6 +46,7 @@
 <body>
     <script>
         let inputBIG = false
+        var notechecked = false
 
         var ss = getCookie("ss")
         var pp = getCookie("pp");
@@ -146,6 +147,7 @@
                 }
             }
 
+
             function reloadStatus() {
                 if (target == "channel" || target == "group") {
                     fetch("https://sebain.pythonanywhere.com/get?filename=" + chatid + "_owner")
@@ -201,11 +203,42 @@
                             console.error("Ошибка при получении данных:", error);
                         });
                 } else {
-                    //Наш уровень
-                    level = 0
-                    displaylevel = "[ЧАТ] [НЕТ АДМИНОВ]"
-                    statusButton.html(displaylevel)
-                    updatebanlist()
+                    if (target == "note") {
+                        level = 0
+                        displaylevel = "[ЗАМЕТКИ] [НЕТ АДМИНОВ]"
+                        statusButton.html(displaylevel)
+                        updatebanlist()
+                        if (!notechecked) {
+                            notechecked = true
+                            fetch("https://sebain.pythonanywhere.com/get?filename=chat_" + getCookie("chatid"))
+                                .then(response => response.text())
+                                .then(data2 => {
+                                    if (data2 == "Файл не найден в unsave") {
+                                        crush
+                                    }
+
+
+                                })
+                                .catch(error => {
+                                    fetch("https://sebain.pythonanywhere.com/set?filename=chat_" + getCookie("chatid") + "&text={}")
+                                        .then(response => response.text())
+                                        .then(data2 => {
+
+
+
+                                        })
+                                        .catch(error => {
+                                            console.error("Ошибка при получении данных:", error);
+                                        });
+                                });
+                        }
+                    } else {
+                        level = 0
+                        displaylevel = "[ЧАТ] [НЕТ АДМИНОВ]"
+                        statusButton.html(displaylevel)
+                        updatebanlist()
+                    }
+
                 }
             }
             reloadStatus()
@@ -613,7 +646,7 @@
                 });
 
             function reloadOnline() {
-                if (level == 0) {
+                if (level == 0 && targ2 != "note") {
                     fetch("https://sebain.pythonanywhere.com/saveget?filename=" + getCookie("target") + "_last-online&text=" + Math.floor(Date.now() / 1000))
                         .then(response => response.text())
                         .then(data => {
@@ -905,16 +938,18 @@
             }
 
             function reposition() {
-                const y = window.visualViewport.height + window.visualViewport.offsetTop;
+                const vp = window.visualViewport;
+                const y = vp.height + vp.offsetTop;
                 inputposititoner(y);
             }
 
-            window.visualViewport.addEventListener('resize', reposition);
-            window.visualViewport.addEventListener('scroll', reposition);
-
-            setInterval(() => {
-                inputposititoner(window.visualViewport.height)
-            }, 500);
+            if (window.visualViewport) {
+                visualViewport.addEventListener('resize', reposition);
+                visualViewport.addEventListener('scroll', reposition);
+            } else {
+                // fallback
+                window.addEventListener('resize', () => inputposititoner(window.innerHeight));
+            }
 
             //Начало над полевводные кнопки и инпут
 
@@ -933,12 +968,6 @@
                     console.log('Enter нажат: ' + input.value());
                     sent(input.value())
 
-                }
-            });
-            input.mousePressed(() => {
-                if (getCookie("InputTipped") != "true") {
-                    setCookie2("InputTipped", "true")
-                    xAlert("Используйте кнопку которая внизу, справа в вашей клавиатуре для отправки(НА ПК ИСПОЛЬЗУЙТЕ ENTER)")
                 }
             });
 
