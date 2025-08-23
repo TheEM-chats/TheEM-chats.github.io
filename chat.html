@@ -868,7 +868,7 @@
                 setCookie2("callid", joiningcall)
                 window.location.href = "call.html"
             }
-
+            //Начало над полевводные кнопки и инпут
             function biggerINPUT() {
                 if (inputBIG && input.value().length < 16) {
                     inputBIG = false
@@ -927,7 +927,7 @@
 
             function inputposititoner(y = window.innerHeight) {
                 send.position(window.innerWidth - 65, y - 40)
-                sendP.position(window.innerWidth - 57, y - 70)
+                sendP.position(window.innerWidth - 57, y - 60)
                 fileS.position(window.innerWidth - 105, y - 40)
                 fileSP.position(window.innerWidth - 101, y - 63)
                 if (inputBIG) {
@@ -938,43 +938,6 @@
                     input.size(window.innerWidth - 45, 30)
                 }
             }
-
-            let baseHeight = window.innerHeight;
-            let startY = window.scrollY;
-
-            function isKeyboardOpen() {
-                // Разница больше 150px — почти наверняка клава открыта
-                return window.innerHeight < baseHeight - 150;
-            }
-
-            function handleResize() {
-                if (isKeyboardOpen()) {
-                    // Возврат скролла на место
-                    setTimeout(() => window.scrollTo(0, startY), 50)
-                    setTimeout(() => window.scrollTo(0, startY), 100)
-                    setTimeout(() => window.scrollTo(0, startY), 150)
-                    setTimeout(() => window.scrollTo(0, startY), 200);
-                    // Смещаем элементы к середине окна
-                    inputposititoner(window.innerHeight / 2);
-                } else {
-                    inputposititoner();
-                }
-            }
-
-            // Сохраняем базовую высоту при загрузке
-            window.addEventListener('load', () => {
-                baseHeight = window.innerHeight;
-            });
-
-            // Реагируем на изменение видимой области
-            window.addEventListener('resize', handleResize);
-
-            // На всякий случай отслеживаем фокус/блюр на инпутах
-            document.addEventListener('focusin', handleResize);
-            document.addEventListener('focusout', handleResize);
-
-
-            //Начало над полевводные кнопки и инпут
 
             var input = createInput()
             ButtonStyling(input)
@@ -1026,8 +989,8 @@
             fileSP.style('font-size', '24px')
             fileSP.style('position', 'fixed');
             fileSP.style('z-index', '2');
-            inputposititoner()
-                //Конец над полевводные кнопки
+            inputposititoner();
+            //Конец над полевводные кнопки
             function getTextLength(text) {
                 return text.length;
             }
