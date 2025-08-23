@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
+    html,
+    body {
+        overflow: hidden;
+        /* Полностью убираем скролл у окна */
+        height: 100%;
+    }
+    
     #myContainer {
         overflow-y: scroll;
         height: 300px;
@@ -838,8 +845,7 @@
                     ButtonStyling(input)
                     input.attribute('placeholder', 'Введите текст...');
                     input.style('font-size', '16px');
-                    input.position(15, window.innerHeight - 40)
-                    input.size(window.innerWidth - 45, 30)
+
                     input.style('background', "rgba(" + hexToRGBValues("#000000") + ", 0.66)");
                     input.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#000000") + " , 0.60)");
                     input.mouseOver(() => {});
@@ -855,6 +861,7 @@
                     });
                     input.elt.focus()
                     input.elt.setSelectionRange(15, 15)
+                    inputposititoner()
                 } else if (!inputBIG && input.value().length > 15) {
                     let currentText = input.value();
 
@@ -864,8 +871,7 @@
                     ButtonStyling(input)
                     input.attribute('placeholder', 'Введите текст...');
                     input.style('font-size', '12px');
-                    input.position(15, window.innerHeight - 120)
-                    input.size(window.innerWidth - 45, 75)
+
                     input.style('background', "rgba(" + hexToRGBValues("#000000") + ", 0.66)");
                     input.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#000000") + " , 0.60)");
                     input.mouseOver(() => {});
@@ -882,15 +888,32 @@
                     });
                     input.elt.focus()
                     input.elt.setSelectionRange(16, 16)
+                    inputposititoner()
+                }
+            }
+
+            function inputposititoner() {
+                send.position(window.innerWidth - 65, window.innerHeight - 40)
+                sendP.position(window.innerWidth - 61, window.innerHeight - 70)
+                fileS.position(window.innerWidth - 105, window.innerHeight - 40)
+                fileSP.position(window.innerWidth - 101, window.innerHeight - 63)
+                if (inputBIG) {
+                    input.position(15, window.innerHeight - 120)
+                    input.size(window.innerWidth - 45, 75)
+                } else {
+                    input.position(15, window.innerHeight - 40)
+                    input.size(window.innerWidth - 45, 30)
                 }
             }
             //Начало над полевводные кнопки и инпут
+            window.addEventListener("resize", () => {
+                inputposititoner()
+                BackStyling()
+            });
             var input = createInput()
             ButtonStyling(input)
             input.attribute('placeholder', 'Введите текст...');
             input.style('font-size', '16px');
-            input.position(15, window.innerHeight - 40)
-            input.size(window.innerWidth - 45, 30)
             input.style('background', "rgba(" + hexToRGBValues("#000000") + ", 0.66)");
             input.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#000000") + " , 0.60)");
             input.mouseOver(() => {});
@@ -904,16 +927,17 @@
 
                 }
             });
+
             //Конец инпута
             let send = createButton("")
             ButtonStyling(send)
-            send.position(window.innerWidth - 65, window.innerHeight - 40)
+
             send.size(40, 34)
             send.style('border-radius', '8px')
             send.style('position', 'fixed');
             send.style('z-index', '1');
             let sendP = createP("📨")
-            sendP.position(window.innerWidth - 61, window.innerHeight - 70)
+
             sendP.size(40, 34)
             sendP.style('pointer-events', 'none')
             sendP.style('font-size', '24px')
@@ -921,7 +945,7 @@
             sendP.style('z-index', '2');
             let fileS = createButton("")
             ButtonStyling(fileS)
-            fileS.position(window.innerWidth - 105, window.innerHeight - 40)
+
             fileS.size(40, 34)
             fileS.style('border-radius', '8px')
             fileS.mousePressed(() => {
@@ -930,13 +954,14 @@
             fileS.style('position', 'fixed');
             fileS.style('z-index', '1');
             let fileSP = createP("📎")
-            fileSP.position(window.innerWidth - 101, window.innerHeight - 63)
+
             fileSP.size(40, 34)
             fileSP.style('pointer-events', 'none')
             fileSP.style('font-size', '24px')
             fileSP.style('position', 'fixed');
             fileSP.style('z-index', '2');
-            //Конец над полевводные кнопки
+            inputposititoner()
+                //Конец над полевводные кнопки
             function getTextLength(text) {
                 return text.length;
             }
