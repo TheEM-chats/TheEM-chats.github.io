@@ -892,24 +892,27 @@
                 }
             }
 
-            function inputposititoner() {
-                send.position(window.innerWidth - 65, window.innerHeight - 40)
-                sendP.position(window.innerWidth - 61, window.innerHeight - 70)
-                fileS.position(window.innerWidth - 105, window.innerHeight - 40)
-                fileSP.position(window.innerWidth - 101, window.innerHeight - 63)
+            function inputposititoner(y = window.innerHeight) {
+                send.position(window.innerWidth - 65, y - 40)
+                sendP.position(window.innerWidth - 61, y - 60)
+                fileS.position(window.innerWidth - 105, y - 40)
+                fileSP.position(window.innerWidth - 101, y - 63)
                 if (inputBIG) {
-                    input.position(15, window.innerHeight - 120)
+                    input.position(15, y - 120)
                     input.size(window.innerWidth - 45, 75)
                 } else {
-                    input.position(15, window.innerHeight - 40)
+                    input.position(15, y - 40)
                     input.size(window.innerWidth - 45, 30)
                 }
             }
             //Начало над полевводные кнопки и инпут
             window.addEventListener("resize", () => {
                 inputposititoner()
-                BackStyling()
             });
+            window.visualViewport.addEventListener('resize', () => {
+                inputposititoner(window.visualViewport.height)
+            });
+
             var input = createInput()
             ButtonStyling(input)
             input.attribute('placeholder', 'Введите текст...');
