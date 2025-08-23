@@ -926,8 +926,10 @@
             }
 
             function inputposititoner(y = window.innerHeight) {
-                fileS.position(window.innerWidth - 65, y - 40)
-                fileSP.position(window.innerWidth - 61, y - 60)
+                send.position(window.innerWidth - 65, y - 40)
+                sendP.position(window.innerWidth - 57, y - 70)
+                fileS.position(window.innerWidth - 105, y - 40)
+                fileSP.position(window.innerWidth - 101, y - 63)
                 if (inputBIG) {
                     input.position(15, y - 120)
                     input.size(window.innerWidth - 45, 75)
@@ -937,19 +939,40 @@
                 }
             }
 
-            function reposition() {
-                const vp = window.visualViewport;
-                const y = vp.height + vp.offsetTop;
-                inputposititoner(y);
+            let baseHeight = window.innerHeight;
+            let startY = window.scrollY;
+
+            function isKeyboardOpen() {
+                // Разница больше 150px — почти наверняка клава открыта
+                return window.innerHeight < baseHeight - 150;
             }
 
-            if (window.visualViewport) {
-                visualViewport.addEventListener('resize', reposition);
-                visualViewport.addEventListener('scroll', reposition);
-            } else {
-                // fallback
-                window.addEventListener('resize', () => inputposititoner(window.innerHeight));
+            function handleResize() {
+                if (isKeyboardOpen()) {
+                    // Возврат скролла на место
+                    setTimeout(() => window.scrollTo(0, startY), 50)
+                    setTimeout(() => window.scrollTo(0, startY), 100)
+                    setTimeout(() => window.scrollTo(0, startY), 150)
+                    setTimeout(() => window.scrollTo(0, startY), 200);
+                    // Смещаем элементы к середине окна
+                    inputposititoner(window.innerHeight / 2);
+                } else {
+                    inputposititoner();
+                }
             }
+
+            // Сохраняем базовую высоту при загрузке
+            window.addEventListener('load', () => {
+                baseHeight = window.innerHeight;
+            });
+
+            // Реагируем на изменение видимой области
+            window.addEventListener('resize', handleResize);
+
+            // На всякий случай отслеживаем фокус/блюр на инпутах
+            document.addEventListener('focusin', handleResize);
+            document.addEventListener('focusout', handleResize);
+
 
             //Начало над полевводные кнопки и инпут
 
@@ -972,6 +995,20 @@
             });
 
             //Конец инпута
+            let send = createButton("")
+            ButtonStyling(send)
+
+            send.size(40, 34)
+            send.style('border-radius', '8px')
+            send.style('position', 'fixed');
+            send.style('z-index', '1');
+            let sendP = createP("📨")
+
+            sendP.size(40, 34)
+            sendP.style('pointer-events', 'none')
+            sendP.style('font-size', '24px')
+            sendP.style('position', 'fixed');
+            sendP.style('z-index', '2');
             let fileS = createButton("")
             ButtonStyling(fileS)
 
