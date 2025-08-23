@@ -905,13 +905,17 @@
                     input.size(window.innerWidth - 45, 30)
                 }
             }
-            //Начало над полевводные кнопки и инпут
-            window.addEventListener("resize", () => {
-                inputposititoner()
-            });
-            window.visualViewport.addEventListener('resize', () => {
+            setInterval(() => {
                 inputposititoner(window.visualViewport.height)
-            });
+            }, 500);
+
+            //            //Начало над полевводные кнопки и инпут
+            //            window.addEventListener("resize", () => {
+            //                inputposititoner()
+            //            });
+            //            window.visualViewport.addEventListener('resize', () => {
+            //                inputposititoner(window.visualViewport.height)
+            //            });
 
             var input = createInput()
             ButtonStyling(input)
