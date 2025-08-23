@@ -893,10 +893,8 @@
             }
 
             function inputposititoner(y = window.innerHeight) {
-                send.position(window.innerWidth - 65, y - 40)
-                sendP.position(window.innerWidth - 61, y - 60)
-                fileS.position(window.innerWidth - 105, y - 40)
-                fileSP.position(window.innerWidth - 101, y - 63)
+                fileS.position(window.innerWidth - 65, y - 40)
+                fileSP.position(window.innerWidth - 61, y - 60)
                 if (inputBIG) {
                     input.position(15, y - 120)
                     input.size(window.innerWidth - 45, 75)
@@ -906,27 +904,8 @@
                 }
             }
             setInterval(() => {
-                const y = window.visualViewport ?
-                    window.visualViewport.height :
-                    window.innerHeight;
-                inputposititoner(y);
+                inputposititoner(window.visualViewport.height)
             }, 500);
-            // включай один раз при инициализации
-            document.addEventListener('touchstart', function(e) {
-                if (e.touches.length !== 1) return;
-                var t = e.touches[0];
-                var real = document.elementFromPoint(t.clientX, t.clientY);
-                if (real && real !== e.target) {
-                    e.preventDefault(); // чтобы не полетел "ложный" клик
-                    real.dispatchEvent(new MouseEvent('click', {
-                        bubbles: true,
-                        cancelable: true,
-                        view: window
-                    }));
-                }
-            }, {
-                passive: false
-            });
 
             //Начало над полевводные кнопки и инпут
             window.addEventListener("resize", () => {
@@ -953,22 +932,14 @@
 
                 }
             });
+            input.mousePressed(() => {
+                if (getCookie("InputTipped") != "true") {
+                    setCookie2("InputTipped", "true")
+                    xAlert("Используйте кнопку которая внизу, справа в вашей клавиатуре для отправки(НА ПК ИСПОЛЬЗУЙТЕ ENTER)")
+                }
+            });
 
             //Конец инпута
-            let send = createButton("")
-            ButtonStyling(send)
-
-            send.size(40, 34)
-            send.style('border-radius', '8px')
-            send.style('position', 'fixed');
-            send.style('z-index', '1');
-            let sendP = createP("📨")
-
-            sendP.size(40, 34)
-            sendP.style('pointer-events', 'none')
-            sendP.style('font-size', '24px')
-            sendP.style('position', 'fixed');
-            sendP.style('z-index', '2');
             let fileS = createButton("")
             ButtonStyling(fileS)
 
