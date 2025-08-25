@@ -141,8 +141,13 @@ function MenuShow(editnum) {
             history[editnum].prevvalue = history[editnum].value
             history[editnum].sender = "system"
             history[editnum].value = "Удалённое сообщение"
-            history[editnum].type = "text"
-            fetch("https://sebain.pythonanywhere.com/changer?filename=chat_" + getCookie("chatid") + "&text=" + JSON.stringify(history[editnum]) + "&uid=" + uid + andpass)
+            if (getCookie("target") == "note") {
+                history[editnum].type = "invis"
+            } else {
+                history[editnum].type = "text"
+            }
+
+            fetch("https://sebain.pythonanywhere.com/changer?filename=chat_" + getCookie("chatid") + "&text=" + Crypt(JSON.stringify(history[editnum])) + "&uid=" + uid + andpass)
                 .then(response => response.text())
                 .then(data => {
                     SoundEffect("push.mp3")
