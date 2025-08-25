@@ -892,9 +892,14 @@
 
                         }
                     });
+                    if (isKeyBoard) {
+                        deStyler()
+                    }
+                    setUpFix()
                     input.elt.focus()
                     input.elt.setSelectionRange(15, 15)
                     inputposititoner()
+
                 } else if (!inputBIG && input.value().length > 15) {
                     let currentText = input.value();
 
@@ -919,6 +924,10 @@
 
                         }
                     });
+                    if (isKeyBoard) {
+                        deStyler()
+                    }
+                    setUpFix()
                     input.elt.focus()
                     input.elt.setSelectionRange(16, 16)
                     inputposititoner()
@@ -945,6 +954,8 @@
             input.style('font-size', '16px');
             input.style('background', "rgba(" + hexToRGBValues("#000000") + ", 0.66)");
             input.style('box-shadow', "0 2px 6px rgba(" + hexToRGBValues("#000000") + " , 0.60)");
+            input.style('position', 'fixed');
+            input.style('z-index', '1');
             input.mouseOver(() => {});
             input.mouseOut(() => {});
             input.style('border-radius', '8px')
@@ -964,14 +975,14 @@
             send.size(40, 34)
             send.style('border-radius', '8px')
             send.style('position', 'fixed');
-            send.style('z-index', '1');
+            send.style('z-index', '2');
             let sendP = createP("📨")
 
             sendP.size(40, 34)
             sendP.style('pointer-events', 'none')
             sendP.style('font-size', '24px')
             sendP.style('position', 'fixed');
-            sendP.style('z-index', '2');
+            sendP.style('z-index', '3');
             let fileS = createButton("")
             ButtonStyling(fileS)
 
@@ -981,37 +992,56 @@
                 vlog()
             });
             fileS.style('position', 'fixed');
-            fileS.style('z-index', '1');
+            fileS.style('z-index', '2');
             let fileSP = createP("📎")
 
             fileSP.size(40, 34)
             fileSP.style('pointer-events', 'none')
             fileSP.style('font-size', '24px')
             fileSP.style('position', 'fixed');
-            fileSP.style('z-index', '2');
+            fileSP.style('z-index', '3');
             inputposititoner();
+
             //Фикс номер 2
-            let keyboardTimer;
+            var Styler
 
-            function updateVisibleHeight() {
-                const vh = window.visualViewport ?
-                    window.visualViewport.height :
-                    window.innerHeight;
-
-                inputposititoner(vh);
+            function enStyler() {
+                Styler = createButton("")
+                ButtonStyling(Styler)
+                Styler.position(0, window.innerHeight / 2 - window.innerHeight / 444)
+                Styler.size(window.innerWidth, 10000)
+                Styler.style('border-radius', '10px')
             }
 
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', () => {
-                    clearTimeout(keyboardTimer);
-                    keyboardTimer = setTimeout(updateVisibleHeight, 50);
+            function deStyler() {
+                Styler.remove()
+            }
+
+            function setUpFix() {
+                input.elt.addEventListener('focus', () => {
+                    if (isMobileDevice()) {
+                        isKeyBoard = true
+                        enStyler()
+                    }
                 });
-            } else {
-                window.addEventListener('resize', () => {
-                    clearTimeout(keyboardTimer);
-                    keyboardTimer = setTimeout(updateVisibleHeight, 50);
+
+                input.elt.addEventListener('blur', () => {
+                    if (isMobileDevice()) {
+                        isKeyBoard = false
+                        deStyler()
+                    }
                 });
             }
+            var isKeyBoard = false
+            setUpFix()
+            setInterval(() => {
+                if (isKeyBoard) {
+                    inputposititoner(window.innerHeight / 2 - window.innerHeight / 444)
+                } else {
+                    inputposititoner()
+                }
+
+            }, 200);
             //Конец
 
 

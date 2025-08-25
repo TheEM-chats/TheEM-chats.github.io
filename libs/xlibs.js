@@ -175,6 +175,10 @@ function SoundEffect(filename) {
     audio.play();
 }
 
+function isMobileDevice() {
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 function hexToRGBValues(hex) {
     hex = hex.replace(/^#/, '');
 
