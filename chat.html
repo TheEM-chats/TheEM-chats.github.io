@@ -16,6 +16,7 @@
     
     #myContainer::-webkit-scrollbar {
         width: 4px;
+        height: 4px;
     }
     
     #myContainer::-webkit-scrollbar-track {
@@ -40,6 +41,7 @@
     <script src="homepage/load_chats.js"></script>
     <script src="chat/usrader.js"></script>
     <script src="chat/usrlist.js"></script>
+    <script src="chat/extra/smileboard.js"></script>
 
 </head>
 
@@ -939,6 +941,8 @@
                 sendP.position(window.innerWidth - 57, y - 60)
                 fileS.position(window.innerWidth - 105, y - 40)
                 fileSP.position(window.innerWidth - 101, y - 63)
+                smile.position(window.innerWidth - 145, y - 40 + 99999)
+                smileP.position(window.innerWidth - 140, y - 60 + 99999)
                 if (inputBIG) {
                     input.position(15, y - 120)
                     input.size(window.innerWidth - 45, 75)
@@ -1000,12 +1004,30 @@
             fileSP.style('font-size', '24px')
             fileSP.style('position', 'fixed');
             fileSP.style('z-index', '3');
+            let smile = createButton("")
+            ButtonStyling(smile)
+
+            smile.size(40, 34)
+            smile.style('border-radius', '8px')
+            smile.mousePressed(() => {
+                smileboard(input, enStyler, false, deStyler)
+            });
+            smile.style('position', 'fixed');
+            smile.style('z-index', '2');
+            let smileP = createP("😀")
+
+            smileP.size(40, 34)
+            smileP.style('pointer-events', 'none')
+            smileP.style('font-size', '24px')
+            smileP.style('position', 'fixed');
+            smileP.style('z-index', '3');
             inputposititoner();
 
             //Фикс номер 2
             var Styler
 
             function enStyler() {
+                deStyler()
                 Styler = createButton("")
                 ButtonStyling(Styler)
                 Styler.position(0, window.innerHeight / 2 - window.innerHeight / 444)
@@ -1014,7 +1036,11 @@
             }
 
             function deStyler() {
-                Styler.remove()
+                try {
+                    Styler.remove()
+                } catch {
+                    console.log("Заглушки нет")
+                }
             }
 
             function setUpFix() {
@@ -1033,12 +1059,13 @@
                 });
             }
             var isKeyBoard = false
+            var he = window.innerHeight
             setUpFix()
             setInterval(() => {
                 if (isKeyBoard) {
                     inputposititoner(window.innerHeight / 2 - window.innerHeight / 444)
                 } else {
-                    inputposititoner()
+                    inputposititoner(he)
                 }
 
             }, 200);
