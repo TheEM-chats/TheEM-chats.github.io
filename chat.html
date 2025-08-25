@@ -990,20 +990,30 @@
             fileSP.style('position', 'fixed');
             fileSP.style('z-index', '2');
             inputposititoner();
+            //Фикс номер 2
+            let keyboardTimer;
 
-            setInterval(() => {
-                let visibleHeight;
+            function updateVisibleHeight() {
+                const vh = window.visualViewport ?
+                    window.visualViewport.height :
+                    window.innerHeight;
 
-                if (window.visualViewport) {
-                    // Видимая высота окна с учётом клавиатуры
-                    visibleHeight = window.visualViewport.height;
-                } else {
-                    // Фолбэк для старых браузеров
-                    visibleHeight = window.innerHeight;
-                }
+                inputposititoner(vh);
+            }
 
-                inputposititoner(visibleHeight);
-            }, 200);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => {
+                    clearTimeout(keyboardTimer);
+                    keyboardTimer = setTimeout(updateVisibleHeight, 50);
+                });
+            } else {
+                window.addEventListener('resize', () => {
+                    clearTimeout(keyboardTimer);
+                    keyboardTimer = setTimeout(updateVisibleHeight, 50);
+                });
+            }
+            //Конец
+
 
             //Конец над полевводные кнопки
             function getTextLength(text) {
