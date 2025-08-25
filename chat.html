@@ -990,6 +990,10 @@
             fileSP.style('position', 'fixed');
             fileSP.style('z-index', '2');
             inputposititoner();
+
+            setInterval(() => {
+                inputposititoner()
+            }, 250);
             //Конец над полевводные кнопки
             function getTextLength(text) {
                 return text.length;
@@ -1035,6 +1039,66 @@
                 biggerINPUT()
             });
         }
+        let vv = window.visualViewport;
+        let lockTimer = null;
+        let locked = false;
+        let lockedHeight = null;
+        let lockedTop = null;
+
+        if ('virtualKeyboard' in navigator) {
+            navigator.virtualKeyboard.overlaysContent = true;
+        }
+
+        function lockViewport(h, top) {
+            locked = true;
+            lockedHeight = h;
+            lockedTop = top;
+            document.documentElement.style.height = h + 'px';
+            document.documentElement.style.transform = `translateY(${top}px)`;
+        }
+
+        function unlockViewport() {
+            locked = false;
+            lockedHeight = null;
+            lockedTop = null;
+            document.documentElement.style.height = '';
+            document.documentElement.style.transform = '';
+        }
+
+        function onVVResize() {
+            if (!vv) return;
+            const h = vv.height;
+            const top = vv.offsetTop || 0;
+
+            if (!locked && document.activeElement && isEditable(document.activeElement)) {
+                // Первый resize после фокуса — фиксируем
+                lockViewport(h, top);
+                clearTimeout(lockTimer);
+                lockTimer = setTimeout(() => {
+                    // Через 1 сек можно снова реагировать на ресайзы
+                    unlockViewport();
+                }, 1000);
+            }
+        }
+
+        function isEditable(el) {
+            if (!el) return false;
+            if (el.isContentEditable) return true;
+            if (el.tagName && el.tagName.toLowerCase() === 'textarea') return true;
+            if (el.tagName && el.tagName.toLowerCase() === 'input') {
+                const t = (el.type || '').toLowerCase();
+                return !['checkbox', 'radio', 'button', 'submit', 'range', 'color', 'file', 'image', 'reset', 'hidden'].includes(t);
+            }
+            return false;
+        }
+
+        if (vv) {
+            vv.addEventListener('resize', onVVResize);
+        }
+
+        document.addEventListener('blur', () => {
+            if (locked) unlockViewport();
+        }, true);
     </script>
     <!-- start webpushr code -->
     <script>

@@ -219,14 +219,22 @@ function BackStyling() {
     }
   `;
     document.head.appendChild(lgnstyle);
-    document.body.style.backgroundImage = "url('back2.jpg')";
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.height = "100vh";
-    document.body.style.margin = "0";
-    document.body.style.display = "flex";
-    document.body.style.justifyContent = "center";
-    document.body.style.alignItems = "center";
+
+    function setBodyStyles() {
+        document.body.style.backgroundImage = "url('back2.jpg')";
+        document.body.style.backgroundSize = "cover";
+        document.body.style.backgroundPosition = "center";
+        document.body.style.height = window.innerHeight + 'px';
+        document.body.style.margin = "0";
+        document.body.style.display = "flex";
+        document.body.style.justifyContent = "center";
+        document.body.style.alignItems = "center";
+    }
+
+    window.addEventListener('resize', setBodyStyles);
+    window.addEventListener('orientationchange', setBodyStyles);
+    setBodyStyles();
+
     //Анимация загрузки
     let loader = createImg('loading.gif', 'загрузка');
     loader.size(100, 35);
