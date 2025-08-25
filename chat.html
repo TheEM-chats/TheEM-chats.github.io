@@ -992,8 +992,19 @@
             inputposititoner();
 
             setInterval(() => {
-                inputposititoner()
-            }, 250);
+                let visibleHeight;
+
+                if (window.visualViewport) {
+                    // Видимая высота окна с учётом клавиатуры
+                    visibleHeight = window.visualViewport.height;
+                } else {
+                    // Фолбэк для старых браузеров
+                    visibleHeight = window.innerHeight;
+                }
+
+                inputposititoner(visibleHeight);
+            }, 200);
+
             //Конец над полевводные кнопки
             function getTextLength(text) {
                 return text.length;
@@ -1039,6 +1050,7 @@
                 biggerINPUT()
             });
         }
+        //Инпут фикс, берите если надо
         let vv = window.visualViewport;
         let lockTimer = null;
         let locked = false;
